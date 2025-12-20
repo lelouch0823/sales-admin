@@ -13,3 +13,5 @@ export {
     usePrefersDarkMode,
     usePrefersReducedMotion
 } from './useMediaQuery';
+export { useClickOutside } from './useClickOutside';
+export { useKeyPress, useEscapeKey, useEnterKey } from './useKeyPress';

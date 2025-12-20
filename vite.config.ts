@@ -25,6 +25,7 @@ export default defineConfig(({ mode }) => {
         '@modules': path.resolve(__dirname, './modules'),
         '@lib': path.resolve(__dirname, './lib'),
         '@types': path.resolve(__dirname, './types'),
+        '@utils': path.resolve(__dirname, './utils'),
       }
     },
     // Vitest 配置

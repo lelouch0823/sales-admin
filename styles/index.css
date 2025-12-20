@@ -1,155 +1,157 @@
 /**
  * 全局样式入口
- * 导入所有样式模块
+ * Tailwind CSS + 自定义样式
  */
 
-/* 导入设计变量 */
-@import './variables.css';
+/* Tailwind 基础层 */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-/* 导入动画 */
-@import './animations.css';
+/* ========== 基础层扩展 ========== */
+@layer base {
+    html {
+        font-size: 16px;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
 
-/* ========== 重置样式 ========== */
-*,
-*::before,
-*::after {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
+    body {
+        @apply font-sans text-gray-900 bg-page;
+    }
+
+    /* 链接 */
+    a {
+        @apply text-primary transition-colors duration-fast;
+    }
+
+    a:hover {
+        @apply text-primary-hover;
+    }
+
+    /* 滚动条美化 */
+    ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+        @apply bg-gray-100;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        @apply bg-gray-300 rounded-full;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        @apply bg-gray-400;
+    }
+
+    /* 选中文本 */
+    ::selection {
+        @apply bg-primary-light text-primary-dark;
+    }
+
+    /* 焦点样式 */
+    :focus-visible {
+        @apply outline-2 outline-primary outline-offset-2;
+    }
 }
 
-html {
-    font-size: 16px;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+/* ========== 组件层 ========== */
+@layer components {
+
+    /* 按钮基础 */
+    .btn {
+        @apply px-4 py-2 text-sm font-medium rounded-lg transition-colors;
+    }
+
+    .btn-primary {
+        @apply btn bg-primary text-white hover:bg-primary-hover;
+    }
+
+    .btn-secondary {
+        @apply btn bg-white border border-gray-200 text-gray-700 hover:bg-gray-50;
+    }
+
+    .btn-danger {
+        @apply btn bg-danger text-white hover:bg-red-600;
+    }
+
+    /* 卡片 */
+    .card {
+        @apply bg-surface rounded-xl border border-gray-100 shadow-sm;
+    }
+
+    /* 输入框 */
+    .input {
+        @apply w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none transition-colors;
+        @apply focus:border-primary focus:ring-2 focus:ring-primary/20;
+    }
+
+    /* 表格头 */
+    .table-header {
+        @apply bg-gray-50/50 border-b border-gray-100 text-xs font-semibold text-gray-500 uppercase tracking-wider;
+    }
+
+    /* 表格行 */
+    .table-row {
+        @apply hover:bg-gray-50/40 transition-colors;
+    }
 }
 
-body {
-    font-family: var(--font-sans);
-    font-size: var(--text-base);
-    line-height: 1.5;
-    color: var(--text-primary);
-    background-color: var(--bg-page);
+/* ========== 工具层 ========== */
+@layer utilities {
+
+    /* 屏幕阅读器专用 */
+    .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+    }
+
+    /* 文本截断 */
+    .truncate {
+        @apply overflow-hidden text-ellipsis whitespace-nowrap;
+    }
+
+    .line-clamp-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .line-clamp-3 {
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    /* 骨架屏动画 */
+    .animate-shimmer {
+        background: linear-gradient(90deg,
+                theme('colors.gray.200') 25%,
+                theme('colors.gray.100') 50%,
+                theme('colors.gray.200') 75%);
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite;
+    }
 }
 
-/* ========== 链接 ========== */
-a {
-    color: var(--color-primary);
-    text-decoration: none;
-    transition: color var(--transition-fast);
+/* ========== 暗色主题 ========== */
+.dark {
+    --color-page: theme('colors.gray.900');
+    --color-surface: theme('colors.gray.800');
 }
 
-a:hover {
-    color: var(--color-primary-hover);
-}
-
-/* ========== 按钮重置 ========== */
-button {
-    font-family: inherit;
-    font-size: inherit;
-    cursor: pointer;
-    border: none;
-    background: none;
-}
-
-button:disabled {
-    cursor: not-allowed;
-    opacity: 0.6;
-}
-
-/* ========== 表单元素 ========== */
-input,
-textarea,
-select {
-    font-family: inherit;
-    font-size: inherit;
-}
-
-input:focus,
-textarea:focus,
-select:focus {
-    outline: none;
-}
-
-/* ========== 图片 ========== */
-img,
-svg {
-    display: block;
-    max-width: 100%;
-}
-
-/* ========== 列表 ========== */
-ul,
-ol {
-    list-style: none;
-}
-
-/* ========== 表格 ========== */
-table {
-    border-collapse: collapse;
-    width: 100%;
-}
-
-/* ========== 滚动条美化 ========== */
-::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-}
-
-::-webkit-scrollbar-track {
-    background: var(--color-gray-100);
-}
-
-::-webkit-scrollbar-thumb {
-    background: var(--color-gray-300);
-    border-radius: var(--border-radius-full);
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: var(--color-gray-400);
-}
-
-/* ========== 选中文本 ========== */
-::selection {
-    background: var(--color-primary-light);
-    color: var(--color-primary-dark);
-}
-
-/* ========== 焦点样式 ========== */
-:focus-visible {
-    outline: 2px solid var(--color-primary);
-    outline-offset: 2px;
-}
-
-/* ========== 实用工具类 ========== */
-.sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
-}
-
-.truncate {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.line-clamp-2 {
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
-
-.line-clamp-3 {
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+.dark body {
+    @apply bg-gray-900 text-gray-100;
 }

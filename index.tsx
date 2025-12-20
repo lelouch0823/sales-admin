@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
+import './styles/index.css'; // Tailwind + Global styles
 import './lib/i18n'; // Initialize i18n
 
 const rootElement = document.getElementById('root');
