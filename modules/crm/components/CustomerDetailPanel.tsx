@@ -6,6 +6,7 @@ import { Badge } from '../../../components/common/Badge';
 import { Drawer } from '../../../components/common/Drawer';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../../../lib/toast';
+import { Button } from '../../../components/ui';
 
 interface CustomerDetailPanelProps {
     customer: Customer | null;
@@ -262,12 +263,13 @@ export const CustomerDetailPanel: React.FC<CustomerDetailPanelProps> = ({
                                             min={new Date().toISOString().split('T')[0]}
                                         />
                                     </div>
-                                    <button
+                                    <Button
+                                        variant="primary"
+                                        size="sm"
                                         onClick={handleAddNote}
-                                        className="bg-gray-900 text-white px-3 py-1.5 rounded-lg hover:bg-black transition-colors text-xs font-bold flex items-center gap-1"
                                     >
-                                        <Send size={12} /> {t('crm.detail.post')}
-                                    </button>
+                                        <Send size={12} className="mr-1" /> {t('crm.detail.post')}
+                                    </Button>
                                 </div>
                             </div>
                         )}
@@ -348,7 +350,7 @@ export const CustomerDetailPanel: React.FC<CustomerDetailPanelProps> = ({
                                 <div className="text-center text-sm text-gray-400 py-4">No users available to add.</div>
                             )}
                         </div>
-                        <button onClick={() => setIsShareModalOpen(false)} className="w-full py-2 text-sm text-gray-500 hover:text-gray-700 bg-gray-50 rounded hover:bg-gray-100 transition-colors">{t('common.cancel')}</button>
+                        <Button variant="ghost" fullWidth onClick={() => setIsShareModalOpen(false)}>{t('common.cancel')}</Button>
                     </div>
                 </div>
             )}

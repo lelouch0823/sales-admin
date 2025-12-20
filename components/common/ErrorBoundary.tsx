@@ -1,5 +1,6 @@
 import { Component, ErrorInfo, ReactNode } from 'react';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { Button } from '../ui';
 
 interface Props {
     children: ReactNode;
@@ -51,13 +52,13 @@ export class ErrorBoundary extends Component<Props, State> {
                     <p className="text-sm text-gray-500 mb-4 max-w-md">
                         页面遇到了一些问题，请尝试刷新页面或联系管理员。
                     </p>
-                    <button
+                    <Button
+                        variant="secondary"
                         onClick={this.handleReset}
-                        className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-700 font-medium text-sm rounded-lg hover:bg-gray-50 transition-colors"
                     >
-                        <RefreshCw size={16} />
+                        <RefreshCw size={16} className="mr-2" />
                         重试
-                    </button>
+                    </Button>
                     {process.env.NODE_ENV === 'development' && this.state.error && (
                         <pre className="mt-4 p-3 bg-red-50 text-red-600 text-xs text-left rounded overflow-auto max-w-full">
                             {this.state.error.message}

@@ -1,7 +1,5 @@
 # Global Antigravity Rules
 
-这份文件定义了 Agent 在所有工作区中的行为准则。
-
 ## 核心原则 (Core Principles)
 
 1.  **语言偏好**：永远用中文进行交流，无论是回答问题、解释代码还是进行任务规划。
@@ -26,11 +24,16 @@
 1.  **构建系统**：使用 **Vite**。开发命令为 `npm run dev`，构建命令为 `npm run build`。
 2.  **测试框架**：使用 **Vitest**。运行测试使用 `npm run test`。
 3.  **语言/框架**：React 19, TypeScript, ESLint, Prettier。
-4.  **目录结构规范**：
+4.  **样式框架**：使用 **Tailwind CSS**。
+    - 优先使用 Tailwind 的原子类来实现样式。
+    - 遵循项目中 `styles/variables.css` 定义的设计变量（颜色、间距等）。
+    - 对于复杂或可复用的样式模式，考虑使用 `@apply` 指令封装。
+5.  **目录结构规范**：
     - 公共组件应放在 `components/`。
     - 业务模块应放在 `modules/`。
     - 页面视图应放在 `views/`。
     - 通用钩子应放在 `hooks/`。
+    - 全局样式和 Tailwind 配置相关文件放在 `styles/`。
 
 ## 行为限制 (Restrictions)
 

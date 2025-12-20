@@ -5,6 +5,7 @@ import { Card } from '../common/Card';
 import { Badge } from '../common/Badge';
 import { Toggle } from '../Toggle';
 import { useTranslation } from 'react-i18next';
+import { Button, Select } from '../ui';
 
 interface RecsListProps {
   mode: 'GLOBAL' | 'STORE';
@@ -41,39 +42,37 @@ export const RecsList: React.FC<RecsListProps> = ({
     <div className="space-y-6">
       {mode === 'STORE' && (
         <div className="bg-brand-light border border-blue-100 text-brand px-4 py-3 rounded-lg text-sm flex items-start gap-2 animate-in fade-in">
-           <AlertTriangle size={16} className="mt-0.5" />
-           <div>
-             <strong>{t('recs.override_rule')}:</strong> {t('recs.override_desc')}
-           </div>
+          <AlertTriangle size={16} className="mt-0.5" />
+          <div>
+            <strong>{t('recs.override_rule')}:</strong> {t('recs.override_desc')}
+          </div>
         </div>
       )}
 
       <Card noPadding>
         <div className="p-6 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-             <h2 className="text-lg font-bold text-primary">
-               {mode === 'GLOBAL' ? t('recs.global_title') : t('recs.store_title')}
-             </h2>
-             {mode === 'STORE' && (
-                <select 
-                  value={selectedTenantId}
-                  onChange={(e) => setSelectedTenantId(e.target.value)}
-                  disabled={currentUserRole === 'STORE_MANAGER'}
-                  className="bg-gray-50 border border-gray-200 text-sm rounded-lg p-2 outline-none focus:ring-2 focus:ring-gray-200"
-                >
-                  {tenants.filter(t => t.type === 'STORE').map(t => (
-                    <option key={t.id} value={t.id}>{t.name}</option>
-                  ))}
-                </select>
-             )}
+            <h2 className="text-lg font-bold text-primary">
+              {mode === 'GLOBAL' ? t('recs.global_title') : t('recs.store_title')}
+            </h2>
+            {mode === 'STORE' && (
+              <Select
+                value={selectedTenantId}
+                onChange={(e) => setSelectedTenantId(e.target.value)}
+                disabled={currentUserRole === 'STORE_MANAGER'}
+                options={tenants.filter(t => t.type === 'STORE').map(t => ({ value: t.id, label: t.name }))}
+                fullWidth={false}
+                className="min-w-[180px]"
+              />
+            )}
           </div>
-          <button 
+          <Button
+            variant="primary"
             onClick={onOpenAddModal}
-            className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-hover text-white text-sm font-medium rounded-lg transition-colors shadow-sm"
           >
-            <Plus size={16} />
+            <Plus size={16} className="mr-2" />
             {t('recs.add_product')}
-          </button>
+          </Button>
         </div>
 
         <div className="overflow-x-auto">
@@ -99,33 +98,33 @@ export const RecsList: React.FC<RecsListProps> = ({
                   <tr key={rec.id} className="group hover:bg-gray-50/40">
                     <td className="py-4 px-6">
                       <div className="flex flex-col items-center gap-1">
-                        <button onClick={() => onMovePriority(rec, 'up')} disabled={index === 0} className="text-gray-400 hover:text-gray-600 disabled:opacity-30"><ArrowUp size={14}/></button>
+                        <button onClick={() => onMovePriority(rec, 'up')} disabled={index === 0} className="text-gray-400 hover:text-gray-600 disabled:opacity-30"><ArrowUp size={14} /></button>
                         <span className="font-mono text-xs font-medium text-primary">{rec.priority}</span>
-                        <button onClick={() => onMovePriority(rec, 'down')} disabled={index === recommendations.length -1} className="text-gray-400 hover:text-gray-600 disabled:opacity-30"><ArrowDown size={14}/></button>
+                        <button onClick={() => onMovePriority(rec, 'down')} disabled={index === recommendations.length - 1} className="text-gray-400 hover:text-gray-600 disabled:opacity-30"><ArrowDown size={14} /></button>
                       </div>
                     </td>
                     <td className="py-4 px-6">
                       <div className="flex items-center gap-3">
-                         <div className="w-10 h-10 rounded bg-gray-100 flex-shrink-0">
-                           <img src={product.imageUrl} className="w-full h-full object-cover rounded" />
-                         </div>
-                         <div>
-                           <div className="font-medium text-primary text-sm">{product.name}</div>
-                           <div className="text-xs text-gray-500">{product.sku}</div>
-                         </div>
+                        <div className="w-10 h-10 rounded bg-gray-100 flex-shrink-0">
+                          <img src={product.imageUrl} className="w-full h-full object-cover rounded" />
+                        </div>
+                        <div>
+                          <div className="font-medium text-primary text-sm">{product.name}</div>
+                          <div className="text-xs text-gray-500">{product.sku}</div>
+                        </div>
                       </div>
                     </td>
                     <td className="py-4 px-6">
-                       <Badge variant={product.globalStatus === 'ON_SHELF' ? 'success' : 'neutral'}>
-                         {t(`consts.status.${product.globalStatus}`)}
-                       </Badge>
+                      <Badge variant={product.globalStatus === 'ON_SHELF' ? 'success' : 'neutral'}>
+                        {t(`consts.status.${product.globalStatus}`)}
+                      </Badge>
                     </td>
                     {mode === 'STORE' && (
-                       <td className="py-4 px-6">
-                          <Badge variant={stock === 'IN_STOCK' ? 'success' : stock === 'UNAVAILABLE' ? 'danger' : 'warning'}>
-                            {stock ? t(`consts.stock.${stock}`) : '-'}
-                          </Badge>
-                       </td>
+                      <td className="py-4 px-6">
+                        <Badge variant={stock === 'IN_STOCK' ? 'success' : stock === 'UNAVAILABLE' ? 'danger' : 'warning'}>
+                          {stock ? t(`consts.stock.${stock}`) : '-'}
+                        </Badge>
+                      </td>
                     )}
                     <td className="py-4 px-6 text-xs text-gray-500">
                       <div>{rec.startAt}</div>
@@ -135,12 +134,12 @@ export const RecsList: React.FC<RecsListProps> = ({
                       <Toggle enabled={rec.isEnabled} onToggle={() => onToggle(rec.id, !rec.isEnabled)} />
                     </td>
                     <td className="py-4 px-6 text-right">
-                       <button 
+                      <button
                         onClick={() => onDelete(rec.id)}
                         className="text-gray-400 hover:text-danger-text transition-colors p-1"
-                       >
-                         <Trash2 size={16} />
-                       </button>
+                      >
+                        <Trash2 size={16} />
+                      </button>
                     </td>
                   </tr>
                 );

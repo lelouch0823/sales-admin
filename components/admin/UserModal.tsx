@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { User, Role, Tenant } from '../../types';
 import { Modal } from '../common/Modal';
 import { useTranslation } from 'react-i18next';
+import { Button, Input, Select } from '../ui';
 
 interface UserModalProps {
   isOpen: boolean;
@@ -23,26 +24,25 @@ export const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, userToEdi
 
   useEffect(() => {
     if (isOpen) {
-        if (userToEdit) {
-            setFormData({
-                name: userToEdit.name,
-                email: userToEdit.email,
-                role: userToEdit.role,
-                tenantId: userToEdit.tenantId || '',
-                status: userToEdit.status
-            });
-        } else {
-            setFormData({ name: '', email: '', role: 'STORE_MANAGER', tenantId: '', status: 'ACTIVE' });
-        }
+      if (userToEdit) {
+        setFormData({
+          name: userToEdit.name,
+          email: userToEdit.email,
+          role: userToEdit.role,
+          tenantId: userToEdit.tenantId || '',
+          status: userToEdit.status
+        });
+      } else {
+        setFormData({ name: '', email: '', role: 'STORE_MANAGER', tenantId: '', status: 'ACTIVE' });
+      }
     }
   }, [isOpen, userToEdit]);
 
   const handleSubmit = () => {
-    if(!formData.name || !formData.email) return alert('Name and Email are required');
-    
-    // Logic: Global roles don't need tenantId. Store roles do.
+    if (!formData.name || !formData.email) return alert('Name and Email are required');
+
     const isStoreRole = formData.role === 'STORE_MANAGER' || formData.role === 'STORE_STAFF';
-    if(isStoreRole && !formData.tenantId) return alert('Store roles require a Tenant selection');
+    if (isStoreRole && !formData.tenantId) return alert('Store roles require a Tenant selection');
 
     onSave({
       name: formData.name,
@@ -53,81 +53,66 @@ export const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, userToEdi
     });
   };
 
+  const roleOptions = [
+    { value: 'SUPER_ADMIN', label: 'Super Admin' },
+    { value: 'OPS_GLOBAL', label: 'Global Ops' },
+    { value: 'STORE_MANAGER', label: 'Store Manager' },
+    { value: 'STORE_STAFF', label: 'Store Staff' },
+  ];
+
+  const storeOptions = tenants
+    .filter(t => t.type === 'STORE')
+    .map(t => ({ value: t.id, label: t.name }));
+
   return (
-    <Modal 
-      isOpen={isOpen} 
-      onClose={onClose} 
-      title={userToEdit ? t('users.modal.title_edit') : t('users.modal.title_create')} 
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={userToEdit ? t('users.modal.title_edit') : t('users.modal.title_create')}
       className="max-w-md"
     >
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{t('users.modal.name')}</label>
-            <input 
-              type="text" 
-              value={formData.name}
-              onChange={e => setFormData({...formData, name: e.target.value})}
-              className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-              placeholder="e.g. Jane Doe"
-            />
-          </div>
+      <div className="space-y-4">
+        <Input
+          label={t('users.modal.name')}
+          value={formData.name}
+          onChange={e => setFormData({ ...formData, name: e.target.value })}
+          placeholder="e.g. Jane Doe"
+        />
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{t('users.modal.email')}</label>
-            <input 
-              type="email" 
-              value={formData.email}
-              onChange={e => setFormData({...formData, email: e.target.value})}
-              className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-              placeholder="jane@company.com"
-            />
-          </div>
+        <Input
+          label={t('users.modal.email')}
+          type="email"
+          value={formData.email}
+          onChange={e => setFormData({ ...formData, email: e.target.value })}
+          placeholder="jane@company.com"
+        />
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{t('users.modal.role')}</label>
-            <select 
-               value={formData.role}
-               onChange={e => setFormData({...formData, role: e.target.value as Role})}
-               className="w-full border border-gray-300 rounded-lg p-2.5 text-sm outline-none"
-            >
-              <option value="SUPER_ADMIN">Super Admin</option>
-              <option value="OPS_GLOBAL">Global Ops</option>
-              <option value="STORE_MANAGER">Store Manager</option>
-              <option value="STORE_STAFF">Store Staff</option>
-            </select>
-          </div>
+        <Select
+          label={t('users.modal.role')}
+          options={roleOptions}
+          value={formData.role}
+          onChange={e => setFormData({ ...formData, role: e.target.value as Role })}
+        />
 
-          {(formData.role === 'STORE_MANAGER' || formData.role === 'STORE_STAFF') && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{t('users.modal.assign_store')}</label>
-              <select 
-                 value={formData.tenantId}
-                 onChange={e => setFormData({...formData, tenantId: e.target.value})}
-                 className="w-full border border-gray-300 rounded-lg p-2.5 text-sm outline-none"
-              >
-                <option value="">{t('users.modal.select_store')}</option>
-                {tenants.filter(t => t.type === 'STORE').map(t => (
-                  <option key={t.id} value={t.id}>{t.name}</option>
-                ))}
-              </select>
-            </div>
-          )}
-        </div>
+        {(formData.role === 'STORE_MANAGER' || formData.role === 'STORE_STAFF') && (
+          <Select
+            label={t('users.modal.assign_store')}
+            placeholder={t('users.modal.select_store')}
+            options={storeOptions}
+            value={formData.tenantId}
+            onChange={e => setFormData({ ...formData, tenantId: e.target.value })}
+          />
+        )}
+      </div>
 
-        <div className="mt-8 flex justify-end gap-3">
-          <button 
-            onClick={onClose}
-            className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            {t('common.cancel')}
-          </button>
-          <button 
-            onClick={handleSubmit}
-            className="px-4 py-2 text-sm text-white bg-gray-900 hover:bg-black rounded-lg transition-colors shadow-sm"
-          >
-            {userToEdit ? t('common.save') : t('users.create_btn')}
-          </button>
-        </div>
+      <div className="mt-8 flex justify-end gap-3">
+        <Button variant="secondary" onClick={onClose}>
+          {t('common.cancel')}
+        </Button>
+        <Button variant="primary" onClick={handleSubmit}>
+          {userToEdit ? t('common.save') : t('users.create_btn')}
+        </Button>
+      </div>
     </Modal>
   );
 };

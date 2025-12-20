@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { InfoTab } from './editor/InfoTab';
 import { PriceTab } from './editor/PriceTab';
 import { MediaTab } from './editor/MediaTab';
+import { Button } from '../../../components/ui';
 
 interface ProductEditorProps {
   isOpen: boolean;
@@ -106,11 +107,11 @@ export const ProductEditor: React.FC<ProductEditorProps> = ({ isOpen, onClose, i
 
         {/* 底部操作栏 */}
         <div className="p-4 border-t bg-gray-50 flex justify-end gap-3 shrink-0">
-          <button onClick={onClose} className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg">{t('common.cancel')}</button>
+          <Button variant="secondary" onClick={onClose}>{t('common.cancel')}</Button>
           {canEdit && (
-            <button onClick={handleSave} className="px-4 py-2 text-sm text-white bg-gray-900 hover:bg-black rounded-lg shadow-sm">
+            <Button variant="primary" onClick={handleSave}>
               {initialData ? t('common.save_changes') : t('common.create')}
-            </button>
+            </Button>
           )}
         </div>
       </div>

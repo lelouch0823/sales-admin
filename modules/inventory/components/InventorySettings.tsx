@@ -1,6 +1,7 @@
 import React from 'react';
 import { Modal } from '../../../components/common/Modal';
 import { useTranslation } from 'react-i18next';
+import { Button, Input } from '../../../components/ui';
 
 interface InventorySettingsProps {
   isOpen: boolean;
@@ -14,22 +15,19 @@ export const InventorySettings: React.FC<InventorySettingsProps> = ({ isOpen, on
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={t('inventory.settings.title')} className="max-w-sm">
-        <div className="space-y-4">
-            <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{t('inventory.settings.low_stock_label')}</label>
-                <input 
-                type="number" 
-                min="0"
-                className="w-full border border-gray-300 rounded p-2"
-                value={lowStockThreshold}
-                onChange={(e) => setLowStockThreshold(Number(e.target.value))}
-                />
-                <p className="text-xs text-gray-500 mt-1">{t('inventory.settings.low_stock_desc')}</p>
-            </div>
-        </div>
-        <div className="mt-6 flex justify-end">
-            <button onClick={onClose} className="px-4 py-2 text-sm bg-gray-900 text-white rounded-lg">{t('common.done')}</button>
-        </div>
+      <div className="space-y-4">
+        <Input
+          label={t('inventory.settings.low_stock_label')}
+          type="number"
+          min={0}
+          value={lowStockThreshold}
+          onChange={(e) => setLowStockThreshold(Number(e.target.value))}
+          helperText={t('inventory.settings.low_stock_desc')}
+        />
+      </div>
+      <div className="mt-6 flex justify-end">
+        <Button variant="primary" onClick={onClose}>{t('common.done')}</Button>
+      </div>
     </Modal>
   );
 };

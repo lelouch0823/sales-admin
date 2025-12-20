@@ -5,6 +5,7 @@ import { Toggle } from '../components/Toggle';
 import { User } from '../types';
 import { UserModal } from '../components/admin/UserModal';
 import { useTranslation } from 'react-i18next';
+import { Button } from '../components/ui';
 
 /**
  * 用户管理视图 (UsersView)
@@ -59,12 +60,9 @@ export const UsersView: React.FC = () => {
         {/* 表头操作区 */}
         <div className="p-6 border-b border-gray-100 flex justify-between items-center">
           <h2 className="text-lg font-bold text-primary">{t('users.title')}</h2>
-          <button
-            onClick={openCreateModal}
-            className="px-4 py-2 bg-primary text-white text-sm font-medium rounded-lg shadow-sm hover:bg-primary-hover transition-colors"
-          >
+          <Button variant="primary" onClick={openCreateModal}>
             {t('users.create_btn')}
-          </button>
+          </Button>
         </div>
 
         {/* 用户列表 */}
