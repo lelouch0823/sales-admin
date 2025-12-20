@@ -34,6 +34,13 @@
     - 页面视图应放在 `views/`。
     - 通用钩子应放在 `hooks/`。
     - 全局样式和 Tailwind 配置相关文件放在 `styles/`。
+6.  **组件库使用**（详见 `docs/component-library.md`）：
+    - UI 组件：`components/ui/` (Button, Input, Select, Textarea)
+    - 原语组件：`components/primitives/` (Dialog, Dropdown, Tooltip)
+    - 动画组件：`components/motion/` (AnimatedBox, AnimatedList)
+    - 图表组件：`components/charts/` (SimpleAreaChart, BarChart, PieChart)
+    - 数据请求：`hooks/useApiQuery` (封装 React Query)
+    - 表单验证：`hooks/useZodForm` (封装 react-hook-form + zod)
 
 ## 行为限制 (Restrictions)
 
