@@ -4,48 +4,58 @@ import { QuickActions } from '../components/dashboard/QuickActions';
 import { ActivityFeed } from '../components/dashboard/ActivityFeed';
 import { WelcomeBanner } from '../components/dashboard/WelcomeBanner';
 import { StatsGrid } from '../components/dashboard/StatsGrid';
+import { TrendCharts } from '../components/dashboard/TrendCharts';
+import { AnimatedBox } from '../components/motion';
+import { TooltipProvider } from '../components/primitives';
 
 /**
  * 仪表盘视图 (DashboardView)
- * 职责:
- * 1. 作为应用首页，提供全局状态概览
- * 2. 展示欢迎语 (WelcomeBanner)
- * 3. 展示关键指标 (StatsGrid: 客户数、推荐数、商品数、日志数)
- * 4. 提供常用功能的快捷入口 (QuickActions)
- * 5. 展示最近的系统活动日志 (ActivityFeed)
+ * 
+ * 使用封装:
+ * - AnimatedBox: Framer Motion 动画组件
+ * - TrendCharts: Recharts 图表组件
+ * - TooltipProvider: Radix UI Tooltip
  */
 export const DashboardView: React.FC = () => {
   const { customers, recommendations, logs, products, currentUser } = useApp();
 
-  // 简单的数据聚合计算
   const totalCustomers = customers.length;
-  const activeRecs = recommendations.filter(r => r.isEnabled).length; // 仅统计生效的推荐
-  const todayLogs = logs.length; // (Mock: 实际应过滤今日日期)
+  const activeRecs = recommendations.filter(r => r.isEnabled).length;
+  const todayLogs = logs.length;
 
   return (
-    <div className="space-y-8 animate-fade-in">
-      {/* 欢迎横幅: 显示当前用户角色和上下文 */}
-      <WelcomeBanner />
+    <TooltipProvider>
+      <div className="space-y-8">
+        {/* 欢迎横幅 */}
+        <AnimatedBox animation="fadeInDown" delay={0}>
+          <WelcomeBanner />
+        </AnimatedBox>
 
-      {/* 核心指标网格 */}
-      <StatsGrid 
-        customerCount={totalCustomers}
-        activeRecsCount={activeRecs}
-        productCount={products.length}
-        logCount={todayLogs}
-      />
+        {/* 核心指标网格 */}
+        <AnimatedBox animation="fadeInUp" delay={0.1}>
+          <StatsGrid
+            customerCount={totalCustomers}
+            activeRecsCount={activeRecs}
+            productCount={products.length}
+            logCount={todayLogs}
+          />
+        </AnimatedBox>
 
-      {/* 两列布局: 左侧操作区，右侧活动流 */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-8">
-            {/* 根据角色动态显示的快捷按钮 */}
+        {/* 趋势图表 */}
+        <AnimatedBox animation="fadeIn" delay={0.2}>
+          <TrendCharts />
+        </AnimatedBox>
+
+        {/* 两列布局 */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <AnimatedBox animation="fadeInLeft" delay={0.3} className="lg:col-span-2 space-y-8">
             <QuickActions currentUserRole={currentUser.role} />
-        </div>
-        <div className="lg:col-span-1">
-            {/* 审计日志预览 */}
+          </AnimatedBox>
+          <AnimatedBox animation="fadeInRight" delay={0.4} className="lg:col-span-1">
             <ActivityFeed logs={logs} />
+          </AnimatedBox>
         </div>
       </div>
-    </div>
+    </TooltipProvider>
   );
 };

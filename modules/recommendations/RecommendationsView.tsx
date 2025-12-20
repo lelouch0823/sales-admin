@@ -7,6 +7,8 @@ import { RecsPreview } from './components/RecsPreview';
 import { RecsList } from './components/RecsList';
 import { RecsProductPicker } from './components/RecsProductPicker';
 import { useTranslation } from 'react-i18next';
+import { TooltipProvider } from '../../components/primitives';
+import { dateUtils } from '../../utils';
 
 interface RecsViewProps {
   // 模式：全局配置 / 门店配置 / 效果预览
@@ -22,15 +24,15 @@ interface RecsViewProps {
  * 4. 提供 "Preview" 模式，模拟 App 端看到的最终结果
  */
 export const RecommendationsView: React.FC<RecsViewProps> = ({ mode }) => {
-  const { 
-    tenants, 
-    currentUser, 
-    recommendations, 
-    products, 
+  const {
+    tenants,
+    currentUser,
+    recommendations,
+    products,
     storeStock,
-    addRecommendation, 
-    updateRecommendation, 
-    deleteRecommendation 
+    addRecommendation,
+    updateRecommendation,
+    deleteRecommendation
   } = useApp();
   const { t } = useTranslation();
   const toast = useToast();
@@ -39,7 +41,7 @@ export const RecommendationsView: React.FC<RecsViewProps> = ({ mode }) => {
   const [selectedTenantId, setSelectedTenantId] = useState<string>(
     mode === 'STORE' || mode === 'PREVIEW' ? (currentUser.tenantId || tenants[1].id) : ''
   );
-  
+
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   // --- 1. 列表过滤与排序 ---
@@ -64,9 +66,9 @@ export const RecommendationsView: React.FC<RecsViewProps> = ({ mode }) => {
   const getPreviewRecs = () => {
     const storeRecs = recommendations.filter(r => r.tenantId === selectedTenantId && r.isEnabled);
     const globalRecs = recommendations.filter(r => r.tenantId === null && r.isEnabled);
-    
+
     const hasStoreConfig = recommendations.some(r => r.tenantId === selectedTenantId);
-    
+
     if (hasStoreConfig) {
       return storeRecs.sort((a, b) => a.priority - b.priority);
     }
@@ -98,11 +100,11 @@ export const RecommendationsView: React.FC<RecsViewProps> = ({ mode }) => {
 
     // 计算新优先级 (添加到末尾)
     const newPriority = sortedRecs.length > 0 ? sortedRecs[sortedRecs.length - 1].priority + 1 : 1;
-    
+
     addRecommendation({
       tenantId: mode === 'GLOBAL' ? null : selectedTenantId,
       productId: product.id,
-      startAt: new Date().toISOString().split('T')[0], // 默认今天开始
+      startAt: dateUtils.formatDate(new Date()), // 默认今天开始
       endAt: '2099-12-31', // 默认永久
       priority: newPriority,
       isEnabled: true,
@@ -116,7 +118,7 @@ export const RecommendationsView: React.FC<RecsViewProps> = ({ mode }) => {
   const movePriority = (rec: Recommendation, direction: 'up' | 'down') => {
     const index = sortedRecs.findIndex(r => r.id === rec.id);
     if (index === -1) return;
-    
+
     // 交换相邻两项的 priority
     if (direction === 'up' && index > 0) {
       const prev = sortedRecs[index - 1];
@@ -131,23 +133,25 @@ export const RecommendationsView: React.FC<RecsViewProps> = ({ mode }) => {
   };
 
   // --- 5. 渲染 ---
-  
+
   if (mode === 'PREVIEW') {
     return (
-      <RecsPreview 
-        recommendations={getPreviewRecs()}
-        products={products}
-        tenants={tenants}
-        selectedTenantId={selectedTenantId}
-        setSelectedTenantId={setSelectedTenantId}
-        getStock={getStock}
-      />
+      <TooltipProvider>
+        <RecsPreview
+          recommendations={getPreviewRecs()}
+          products={products}
+          tenants={tenants}
+          selectedTenantId={selectedTenantId}
+          setSelectedTenantId={setSelectedTenantId}
+          getStock={getStock}
+        />
+      </TooltipProvider>
     );
   }
 
   return (
-    <>
-      <RecsList 
+    <TooltipProvider>
+      <RecsList
         mode={mode}
         recommendations={sortedRecs}
         products={products}
@@ -161,9 +165,9 @@ export const RecommendationsView: React.FC<RecsViewProps> = ({ mode }) => {
         onToggle={(id, val) => updateRecommendation(id, { isEnabled: val })}
         onDelete={deleteRecommendation}
       />
-      
+
       {/* 商品选择器模态框 */}
-      <RecsProductPicker 
+      <RecsProductPicker
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         products={products}
@@ -173,6 +177,6 @@ export const RecommendationsView: React.FC<RecsViewProps> = ({ mode }) => {
         getStock={getStock}
         onAdd={handleAddProduct}
       />
-    </>
+    </TooltipProvider>
   );
 };

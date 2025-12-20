@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { AlertCircle, Lock } from 'lucide-react';
 import { Warehouse } from '../types';
 import { Modal } from '../../../components/common/Modal';
 import { useTranslation } from 'react-i18next';
 import { Button, Input, Select } from '../../../components/ui';
+import { useZodForm, Controller } from '../../../hooks/useZodForm';
+import { stockActionSchema, StockActionFormData } from '../../../lib/schemas';
 
 interface StockActionModalProps {
     isOpen: boolean;
@@ -18,16 +20,51 @@ interface StockActionModalProps {
 
 export const StockActionModal: React.FC<StockActionModalProps> = ({ isOpen, onClose, type, sku, warehouses, getStock, onConfirm, preSelectedWhId }) => {
     const { t } = useTranslation();
-    const [form, setForm] = useState({ quantity: 1, from: '', to: '', reason: '' });
+
+    const form = useZodForm<StockActionFormData>({
+        schema: stockActionSchema,
+        defaultValues: {
+            quantity: 1,
+            warehouseId: '',
+            toWarehouseId: '',
+            reason: ''
+        }
+    });
 
     useEffect(() => {
         if (isOpen) {
-            setForm({ quantity: 1, from: preSelectedWhId || '', to: '', reason: '' });
+            form.reset({
+                quantity: 1,
+                warehouseId: preSelectedWhId || '',
+                toWarehouseId: '',
+                reason: ''
+            });
         }
-    }, [isOpen, preSelectedWhId]);
+    }, [isOpen, preSelectedWhId, form]);
 
-    const handleSubmit = () => {
-        onConfirm(form);
+    const onSubmit = (data: any) => {
+        // Map form data back to the structure expected by performStockAction
+        // warehouseId maps to 'from' (or target for RECEIVE)
+        // toWarehouseId maps to 'to'
+
+        let from = '';
+        let to = '';
+
+        if (type === 'RECEIVE') {
+            to = data.warehouseId;
+        } else if (type === 'TRANSFER') {
+            from = data.warehouseId;
+            to = data.toWarehouseId || '';
+        } else {
+            from = data.warehouseId;
+        }
+
+        onConfirm({
+            quantity: data.quantity,
+            from,
+            to,
+            reason: data.reason || ''
+        });
     };
 
     const getTitle = () => {
@@ -51,26 +88,40 @@ export const StockActionModal: React.FC<StockActionModalProps> = ({ isOpen, onCl
         <Modal isOpen={isOpen} onClose={onClose} title={getTitle()} className="max-w-sm">
             <div className="text-sm text-muted mb-4 font-mono bg-gray-50 p-2 rounded">SKU: {sku}</div>
 
-            <div className="space-y-3">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
                 {/* For RESERVE or ISSUE or TRANSFER, we need a source warehouse */}
                 {(type === 'TRANSFER' || type === 'ISSUE' || type === 'RESERVE') && (
-                    <Select
-                        label={t('inventory.modal.from_wh')}
-                        placeholder="Select..."
-                        options={fromOptions}
-                        value={form.from}
-                        onChange={e => setForm({ ...form, from: e.target.value })}
-                        disabled={!!preSelectedWhId}
+                    <Controller
+                        control={form.control}
+                        name="warehouseId"
+                        render={({ field, fieldState }) => (
+                            <Select
+                                label={t('inventory.modal.from_wh')}
+                                placeholder="Select..."
+                                options={fromOptions}
+                                value={field.value}
+                                onChange={e => field.onChange(e.target.value)}
+                                disabled={!!preSelectedWhId}
+                                error={fieldState.error?.message}
+                            />
+                        )}
                     />
                 )}
 
                 {(type === 'TRANSFER' || type === 'RECEIVE') && (
-                    <Select
-                        label={type === 'TRANSFER' ? t('inventory.modal.to_wh') : t('inventory.modal.target_wh')}
-                        placeholder="Select..."
-                        options={toOptions}
-                        value={form.to}
-                        onChange={e => setForm({ ...form, to: e.target.value })}
+                    <Controller
+                        control={form.control}
+                        name={type === 'RECEIVE' ? 'warehouseId' : 'toWarehouseId'} // For RECEIVE, warehouseId is the target
+                        render={({ field, fieldState }) => (
+                            <Select
+                                label={type === 'TRANSFER' ? t('inventory.modal.to_wh') : t('inventory.modal.target_wh')}
+                                placeholder="Select..."
+                                options={toOptions}
+                                value={field.value}
+                                onChange={e => field.onChange(e.target.value)}
+                                error={fieldState.error?.message}
+                            />
+                        )}
                     />
                 )}
 
@@ -78,29 +129,29 @@ export const StockActionModal: React.FC<StockActionModalProps> = ({ isOpen, onCl
                     label={t('inventory.modal.qty')}
                     type="number"
                     min={1}
-                    value={form.quantity}
-                    onChange={e => setForm({ ...form, quantity: Number(e.target.value) })}
+                    {...form.register('quantity', { valueAsNumber: true })}
+                    error={form.formState.errors.quantity?.message}
                 />
-            </div>
 
-            {type === 'ISSUE' && (
-                <div className="mt-4 p-3 bg-danger-light text-danger text-xs rounded flex items-start gap-2">
-                    <AlertCircle size={16} />
-                    <div>{t('inventory.modal.issue_warn')}</div>
+                {type === 'ISSUE' && (
+                    <div className="mt-4 p-3 bg-danger-light text-danger text-xs rounded flex items-start gap-2">
+                        <AlertCircle size={16} />
+                        <div>{t('inventory.modal.issue_warn')}</div>
+                    </div>
+                )}
+
+                {type === 'RESERVE' && (
+                    <div className="mt-4 p-3 bg-primary-light text-primary text-xs rounded flex items-start gap-2">
+                        <Lock size={16} />
+                        <div>{t('inventory.modal.reserve_warn')}</div>
+                    </div>
+                )}
+
+                <div className="mt-6 flex justify-end gap-3">
+                    <Button variant="secondary" onClick={onClose} type="button">{t('common.cancel')}</Button>
+                    <Button variant="primary" type="submit">{t('common.confirm')}</Button>
                 </div>
-            )}
-
-            {type === 'RESERVE' && (
-                <div className="mt-4 p-3 bg-primary-light text-primary text-xs rounded flex items-start gap-2">
-                    <Lock size={16} />
-                    <div>{t('inventory.modal.reserve_warn')}</div>
-                </div>
-            )}
-
-            <div className="mt-6 flex justify-end gap-3">
-                <Button variant="secondary" onClick={onClose}>{t('common.cancel')}</Button>
-                <Button variant="primary" onClick={handleSubmit}>{t('common.confirm')}</Button>
-            </div>
+            </form>
         </Modal>
     );
 };

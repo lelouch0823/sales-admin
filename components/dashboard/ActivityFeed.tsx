@@ -4,11 +4,20 @@ import { Card } from '../common/Card';
 import { AuditLog } from '../../types';
 import { useTranslation } from 'react-i18next';
 import { Button } from '../ui';
+import { AnimatedList, AnimatedListItem } from '../motion';
+import { dateUtils } from '../../utils';
 
 interface ActivityFeedProps {
     logs: AuditLog[];
 }
 
+/**
+ * 活动记录组件
+ * 
+ * 使用封装:
+ * - AnimatedList: Framer Motion 列表动画
+ * - dateUtils: 日期格式化
+ */
 export const ActivityFeed: React.FC<ActivityFeedProps> = ({ logs }) => {
     const { t } = useTranslation();
 
@@ -20,15 +29,15 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({ logs }) => {
                     {t('common.view_all')} <ArrowRight size={12} className="ml-1" />
                 </Button>
             </div>
-            <div className="space-y-6">
+            <AnimatedList staggerDelay={0.08} className="space-y-6">
                 {logs.slice(0, 5).map(log => (
-                    <div key={log.id} className="flex gap-4 relative">
+                    <AnimatedListItem key={log.id} className="flex gap-4 relative">
                         {/* Timeline Line */}
                         <div className="absolute left-[19px] top-8 bottom-[-24px] w-px bg-gray-100 last:hidden"></div>
 
                         <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 border-2 border-surface shadow-sm z-10 ${log.action === 'CREATE' ? 'bg-success-light text-success' :
-                                log.action === 'DELETE' ? 'bg-danger-light text-danger' :
-                                    'bg-primary-light text-primary'
+                            log.action === 'DELETE' ? 'bg-danger-light text-danger' :
+                                'bg-primary-light text-primary'
                             }`}>
                             <FileText size={16} />
                         </div>
@@ -38,12 +47,14 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({ logs }) => {
                                 <span className="text-muted font-normal"> {t('common.on')} {t(`consts.target_type.${log.targetType}`)}</span>
                             </p>
                             <p className="text-xs text-muted mt-1">{log.details}</p>
-                            <p className="text-[10px] text-gray-400 mt-1">{log.timestamp}</p>
+                            <p className="text-[10px] text-gray-400 mt-1">
+                                {dateUtils.formatSmart(log.timestamp)}
+                            </p>
                         </div>
-                    </div>
+                    </AnimatedListItem>
                 ))}
                 {logs.length === 0 && <div className="text-sm text-muted">{t('common.no_data')}</div>}
-            </div>
+            </AnimatedList>
         </Card>
     );
 };

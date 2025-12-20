@@ -1,63 +1,84 @@
-import React, { useState, useEffect } from 'react';
-import { User, Role, Tenant } from '../../types';
+import React, { useEffect } from 'react';
+import { User, Tenant } from '../../types';
 import { Modal } from '../common/Modal';
 import { useTranslation } from 'react-i18next';
 import { Button, Input, Select } from '../ui';
+import { useZodForm } from '../../hooks';
+import { userSchema, UserFormData } from '../../lib/schemas';
 
 interface UserModalProps {
   isOpen: boolean;
   onClose: () => void;
-  userToEdit: User | null; // null = create mode
+  userToEdit: User | null;
   tenants: Tenant[];
-  onSave: (data: any) => void;
+  onSave: (data: UserFormData) => void;
 }
 
+/**
+ * 用户创建/编辑模态框
+ * 
+ * 使用封装:
+ * - useZodForm: 表单验证 (react-hook-form + zod)
+ * - userSchema: Zod 验证 schema
+ */
 export const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, userToEdit, tenants, onSave }) => {
   const { t } = useTranslation();
-  const [formData, setFormData] = useState<Partial<User>>({
-    name: '',
-    email: '',
-    role: 'STORE_MANAGER',
-    tenantId: '',
-    status: 'ACTIVE'
+
+  const {
+    register,
+    handleSubmit,
+    watch,
+    reset,
+    setValue,
+    formState: { errors }
+  } = useZodForm({
+    schema: userSchema,
+    defaultValues: {
+      name: '',
+      email: '',
+      role: 'STORE_MANAGER',
+      tenantId: '',
+      isActive: true,
+    }
   });
 
+  const role = watch('role');
+
+  // Reset form when modal opens/closes or user changes
   useEffect(() => {
     if (isOpen) {
       if (userToEdit) {
-        setFormData({
+        reset({
           name: userToEdit.name,
           email: userToEdit.email,
           role: userToEdit.role,
           tenantId: userToEdit.tenantId || '',
-          status: userToEdit.status
+          isActive: userToEdit.status === 'ACTIVE',
         });
       } else {
-        setFormData({ name: '', email: '', role: 'STORE_MANAGER', tenantId: '', status: 'ACTIVE' });
+        reset({
+          name: '',
+          email: '',
+          role: 'STORE_MANAGER',
+          tenantId: '',
+          isActive: true,
+        });
       }
     }
-  }, [isOpen, userToEdit]);
+  }, [isOpen, userToEdit, reset]);
 
-  const handleSubmit = () => {
-    if (!formData.name || !formData.email) return alert('Name and Email are required');
-
-    const isStoreRole = formData.role === 'STORE_MANAGER' || formData.role === 'STORE_STAFF';
-    if (isStoreRole && !formData.tenantId) return alert('Store roles require a Tenant selection');
-
+  const onSubmit = (data: UserFormData) => {
+    const isStoreRole = data.role === 'STORE_MANAGER' || data.role === 'STORE_STAFF';
     onSave({
-      name: formData.name,
-      email: formData.email,
-      role: formData.role as Role,
-      tenantId: isStoreRole ? formData.tenantId : undefined,
-      status: formData.status as 'ACTIVE' | 'DISABLED',
+      ...data,
+      tenantId: isStoreRole ? data.tenantId : undefined,
     });
   };
 
   const roleOptions = [
-    { value: 'SUPER_ADMIN', label: 'Super Admin' },
-    { value: 'OPS_GLOBAL', label: 'Global Ops' },
-    { value: 'STORE_MANAGER', label: 'Store Manager' },
-    { value: 'STORE_STAFF', label: 'Store Staff' },
+    { value: 'SUPER_ADMIN', label: t('consts.role.SUPER_ADMIN') },
+    { value: 'OPS_GLOBAL', label: t('consts.role.OPS_GLOBAL') },
+    { value: 'STORE_MANAGER', label: t('consts.role.STORE_MANAGER') },
   ];
 
   const storeOptions = tenants
@@ -71,48 +92,48 @@ export const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, userToEdi
       title={userToEdit ? t('users.modal.title_edit') : t('users.modal.title_create')}
       className="max-w-md"
     >
-      <div className="space-y-4">
+      <form onSubmit={handleSubmit(onSubmit as any)} className="space-y-4">
         <Input
           label={t('users.modal.name')}
-          value={formData.name}
-          onChange={e => setFormData({ ...formData, name: e.target.value })}
+          {...register('name')}
+          error={errors.name?.message}
           placeholder="e.g. Jane Doe"
         />
 
         <Input
           label={t('users.modal.email')}
           type="email"
-          value={formData.email}
-          onChange={e => setFormData({ ...formData, email: e.target.value })}
+          {...register('email')}
+          error={errors.email?.message}
           placeholder="jane@company.com"
         />
 
         <Select
           label={t('users.modal.role')}
           options={roleOptions}
-          value={formData.role}
-          onChange={e => setFormData({ ...formData, role: e.target.value as Role })}
+          value={role}
+          onChange={e => setValue('role', e.target.value as any)}
         />
 
-        {(formData.role === 'STORE_MANAGER' || formData.role === 'STORE_STAFF') && (
+        {(role === 'STORE_MANAGER' || role === 'STORE_STAFF') && (
           <Select
             label={t('users.modal.assign_store')}
             placeholder={t('users.modal.select_store')}
             options={storeOptions}
-            value={formData.tenantId}
-            onChange={e => setFormData({ ...formData, tenantId: e.target.value })}
+            {...register('tenantId')}
+            error={errors.tenantId?.message}
           />
         )}
-      </div>
 
-      <div className="mt-8 flex justify-end gap-3">
-        <Button variant="secondary" onClick={onClose}>
-          {t('common.cancel')}
-        </Button>
-        <Button variant="primary" onClick={handleSubmit}>
-          {userToEdit ? t('common.save') : t('users.create_btn')}
-        </Button>
-      </div>
+        <div className="mt-8 flex justify-end gap-3">
+          <Button type="button" variant="secondary" onClick={onClose}>
+            {t('common.cancel')}
+          </Button>
+          <Button type="submit" variant="primary">
+            {userToEdit ? t('common.save') : t('users.create_btn')}
+          </Button>
+        </div>
+      </form>
     </Modal>
   );
 };

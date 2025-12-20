@@ -18,7 +18,7 @@ export type LoginFormData = z.infer<typeof loginSchema>;
 export const userSchema = z.object({
     name: z.string().min(2, '姓名至少2个字符').max(50, '姓名不能超过50个字符'),
     email: z.string().email('请输入有效的邮箱地址'),
-    role: z.enum(['SUPER_ADMIN', 'OPS_GLOBAL', 'OPS_STORE', 'STORE_MANAGER']),
+    role: z.enum(['SUPER_ADMIN', 'OPS_GLOBAL', 'STORE_MANAGER', 'STORE_STAFF']),
     tenantId: z.string().optional(),
     isActive: z.boolean().default(true),
 });
@@ -35,6 +35,13 @@ export const productSchema = z.object({
     price: z.number().min(0, '价格不能为负数'),
     status: z.enum(['DRAFT', 'PUBLISHED', 'UNPUBLISHED']),
     tags: z.array(z.string()).optional(),
+    allowBackorder: z.boolean().default(false),
+    allowTransfer: z.boolean().default(false),
+    mediaAssets: z.array(z.object({
+        type: z.enum(['IMAGE', 'VIDEO', 'PDF']),
+        url: z.string(),
+        isMain: z.boolean().optional(),
+    })).optional(),
 });
 
 export type ProductFormData = z.infer<typeof productSchema>;
