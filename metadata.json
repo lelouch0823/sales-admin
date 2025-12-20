@@ -1,0 +1,5 @@
+{
+  "name": "Sales Admin",
+  "description": "A responsive, high-fidelity replica of the WR.DO dashboard using React and Tailwind CSS.",
+  "requestFramePermissions": []
+}

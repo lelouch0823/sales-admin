@@ -1,0 +1,868 @@
+import i18n from 'i18next';
+import { initReactI18next } from 'react-i18next';
+
+const resources = {
+  en: {
+    translation: {
+      "common": {
+        "cancel": "Cancel",
+        "confirm": "Confirm",
+        "save": "Save",
+        "edit": "Edit",
+        "delete": "Delete",
+        "add": "Add",
+        "actions": "Actions",
+        "status": "Status",
+        "search": "Search...",
+        "filters": "Filters",
+        "import": "Import",
+        "export": "Export",
+        "view_all": "View All",
+        "no_data": "No data available",
+        "loading": "Loading...",
+        "selected": "selected",
+        "done": "Done",
+        "save_changes": "Save Changes",
+        "create": "Create",
+        "yes": "Yes",
+        "no": "No",
+        "on": "on",
+        "main": "Main",
+        "empty_title": "No records found",
+        "empty_desc": "Try adjusting your search or filters to find what you're looking for.",
+        "clear_filters": "Clear Filters"
+      },
+      "consts": {
+        "role": {
+          "SUPER_ADMIN": "Super Admin",
+          "OPS_GLOBAL": "Global Ops",
+          "STORE_MANAGER": "Store Manager",
+          "STORE_STAFF": "Store Staff"
+        },
+        "shared_role": {
+          "VIEWER": "Viewer",
+          "EDITOR": "Editor",
+          "MANAGER": "Manager"
+        },
+        "status": {
+          "DRAFT": "Draft",
+          "PUBLISHED": "Published",
+          "UNPUBLISHED": "Unpublished",
+          "ON_SHELF": "On Shelf",
+          "OFF_SHELF": "Off Shelf",
+          "ACTIVE": "Active",
+          "DISABLED": "Disabled"
+        },
+        "stock": {
+          "IN_STOCK": "In Stock",
+          "TRANSFERABLE": "Transferable",
+          "BACKORDER": "Backorder",
+          "UNAVAILABLE": "Unavailable",
+          "LOW_STOCK": "Low Stock",
+          "OUT_OF_STOCK": "Out of Stock"
+        },
+        "warehouse_type": {
+          "STORE": "Store",
+          "DC": "Distribution Center",
+          "VIRTUAL": "Virtual"
+        },
+        "target_type": {
+          "USER": "User",
+          "PRODUCT": "Product",
+          "CUSTOMER": "Customer",
+          "RECOMMENDATION": "Recommendation",
+          "INVENTORY": "Inventory",
+          "ORDER": "Order"
+        },
+        "action": {
+          "CREATE": "Create",
+          "UPDATE": "Update",
+          "DELETE": "Delete",
+          "RECEIVE": "Receive",
+          "ISSUE": "Issue",
+          "TRANSFER": "Transfer",
+          "CLAIM": "Claim",
+          "RELEASE": "Release",
+          "SHARE": "Share",
+          "UNSHARE": "Unshare",
+          "RESERVE": "Reserve"
+        },
+        "interaction_type": {
+            "NOTE": "Note",
+            "CALL": "Call",
+            "VISIT": "Visit",
+            "EMAIL": "Email"
+        }
+      },
+      "alerts": {
+        "pim": {
+            "delete_confirm": "Delete {{count}} products? This cannot be undone.",
+            "sku_name_required": "SKU and Name are required.",
+            "mock_import": "Mock Import Started",
+            "create_success": "Product created successfully.",
+            "update_success": "Product updated successfully.",
+            "delete_success": "Products deleted successfully."
+        },
+        "inventory": {
+            "qty_positive": "Quantity must be positive.",
+            "select_wh": "Please select a warehouse.",
+            "select_source_dest": "Select both source and destination warehouses.",
+            "same_wh": "Source and destination cannot be the same.",
+            "insufficient_stock": "Insufficient stock on hand.",
+            "insufficient_source": "Insufficient stock in source warehouse.",
+            "insufficient_available": "Insufficient available stock to reserve.",
+            "transfer_success": "Stock transfer initiated successfully.",
+            "adjust_success": "Stock adjusted successfully."
+        },
+        "recs": {
+            "off_shelf_error": "Cannot add products that are OFF_SHELF globally.",
+            "unavailable_error": "Cannot add UNAVAILABLE product to store recommendations.",
+            "backorder_confirm": "This product is on BACKORDER. Are you sure you want to recommend it?",
+            "add_success": "Recommendation added."
+        },
+        "crm": {
+            "name_email_required": "Name and Email are required.",
+            "store_role_tenant": "Store roles require a Tenant selection.",
+            "claim_success": "Customer claimed successfully.",
+            "assign_success": "Customers assigned successfully.",
+            "note_added": "Interaction note added.",
+            "shared_success": "Member added with {{role}} access."
+        }
+      },
+      "nav": {
+        "overview": "OVERVIEW",
+        "dashboard": "Dashboard",
+        "catalog_stock": "CATALOG & STOCK",
+        "products": "Products (PIM)",
+        "inventory": "Inventory Center",
+        "todays_recs": "TODAY'S RECS",
+        "global_config": "Global Config",
+        "store_config": "Store Config",
+        "app_preview": "App Preview",
+        "crm": "CRM",
+        "customers": "Customers",
+        "admin": "ADMIN",
+        "users": "Users & Perms",
+        "audit": "Audit Logs"
+      },
+      "header": {
+        "search_placeholder": "Search system (Cmd+K)...",
+        "role_switch": "Dev: Switch Role"
+      },
+      "cmd": {
+        "placeholder": "Type a command or search...",
+        "section_nav": "Navigation",
+        "section_actions": "Quick Actions",
+        "section_products": "Products",
+        "section_customers": "Customers",
+        "no_results": "No results found.",
+        "actions": {
+            "logout": "Log Out",
+            "switch_theme": "Switch Theme (Demo)",
+            "reset_data": "Reset Demo Data"
+        }
+      },
+      "login": {
+        "title": "Sign in to your account",
+        "subtitle": "Manage your retail empire with precision.",
+        "email_label": "Email address",
+        "password_label": "Password",
+        "sign_in_btn": "Sign in",
+        "forgot_password": "Forgot password?",
+        "demo_hint": "Demo: Click Sign in to continue",
+        "footer": {
+            "rights": "© 2024 WR.DO Inc.",
+            "privacy": "Privacy",
+            "terms": "Terms"
+        }
+      },
+      "dashboard": {
+        "welcome": "Welcome back, {{name}}",
+        "welcome_sub": "You are logged in as <1>{{role}}</1>. Manage your store recommendations, customer relationships, and system permissions efficiently.",
+        "stats": {
+          "total_customers": "Total Customers",
+          "active_recs": "Active Recommendations",
+          "total_products": "Total Products",
+          "audit_events": "Audit Events",
+          "total": "total"
+        },
+        "quick_actions": "Quick Actions",
+        "recent_activity": "Recent Activity",
+        "qa": {
+          "new_product": "New Product",
+          "stock_in": "Stock In",
+          "create_user": "Create User",
+          "view_audit": "View Audit"
+        }
+      },
+      "pim": {
+        "search_placeholder": "Search by SKU or Name...",
+        "new_product": "New Product",
+        "filters": {
+            "status_label": "STATUS",
+            "category_label": "CATEGORY",
+            "brand_label": "BRAND",
+            "all_statuses": "All Statuses",
+            "all_categories": "All Categories",
+            "all_brands": "All Brands"
+        },
+        "batch": {
+          "publish": "Publish",
+          "unpublish": "Unpublish",
+          "delete": "Delete"
+        },
+        "table": {
+          "img": "Img",
+          "info": "Product Info",
+          "category": "Category",
+          "status": "Status",
+          "rules": "Rules",
+          "backorder": "Backorder",
+          "transfer": "Transfer"
+        },
+        "import_modal": {
+          "title": "Import Products via CSV",
+          "desc": "Upload your structured CSV file to bulk create or update products.",
+          "download_template": "Download Template",
+          "start": "Start Import"
+        },
+        "editor": {
+            "title_create": "New Product",
+            "title_edit": "Edit Product",
+            "tabs": { "info": "INFO", "price": "PRICE", "media": "MEDIA" },
+            "sku": "SKU",
+            "sku_placeholder": "e.g. SKU-001",
+            "brand": "Brand",
+            "brand_placeholder": "e.g. Nike",
+            "name": "Product Name",
+            "name_placeholder": "e.g. Air Force 1",
+            "description": "Description",
+            "description_placeholder": "Enter detailed product description...",
+            "category": "Category",
+            "category_placeholder": "e.g. Shoes > Sneakers",
+            "status": "Lifecycle Status",
+            "tags": "Tags",
+            "tags_help": "Type tag and press Enter or Comma (,) to add.",
+            "tags_placeholder": "Type tag & press Enter...",
+            "retail_price": "Retail Price",
+            "price_placeholder": "0.00",
+            "sales_rules": "Sales Rules",
+            "allow_backorder": "Allow Backorder (Pre-order when out of stock)",
+            "allow_transfer": "Allow Inter-store Transfer",
+            "upload_hint": "Click to upload Image or PDF",
+            "simulated_upload": "(Simulated Presigned URL Upload)",
+            "no_media": "No media assets",
+            "set_main": "Set as Main",
+            "make_main": "Make Main",
+            "remove": "Remove"
+        }
+      },
+      "inventory": {
+        "tabs": {
+          "overview": "Overview",
+          "by_sku": "By SKU",
+          "by_warehouse": "By Warehouse"
+        },
+        "stats": {
+          "total_value": "Total Stock Value",
+          "low_stock": "Low Stock SKUs",
+          "out_of_stock": "Out of Stock",
+          "movements": "Today's Movements"
+        },
+        "recent_movements": "Recent Movements",
+        "low_stock_alerts": "Low Stock Alerts",
+        "threshold": "Threshold",
+        "restock": "Restock",
+        "ledger": "Inventory Ledger",
+        "left": "Left",
+        "settings": {
+            "title": "Inventory Settings",
+            "low_stock_label": "Low Stock Threshold",
+            "low_stock_desc": "Products with total stock at or below this level will trigger alerts."
+        },
+        "table": {
+            "warehouse": "Warehouse",
+            "on_hand": "On Hand",
+            "reserved": "Reserved",
+            "available": "Available",
+            "sku_prod": "SKU / Product",
+            "in_stock_skus": "SKUs in Stock",
+            "total_on_hand": "Total On Hand",
+            "incoming": "Incoming"
+        },
+        "actions": {
+            "receive": "Receive Stock",
+            "issue": "Issue / Adjust Stock",
+            "transfer": "Transfer Stock",
+            "adjust": "Adjust",
+            "reserve": "Reserve Stock"
+        },
+        "modal": {
+            "title_receive": "Receive Stock",
+            "title_issue": "Issue / Adjust Stock",
+            "title_transfer": "Transfer Stock",
+            "title_reserve": "Reserve Stock",
+            "from_wh": "From Warehouse",
+            "to_wh": "To Warehouse",
+            "target_wh": "Target Warehouse",
+            "qty": "Quantity",
+            "issue_warn": "Using this action effectively reduces the physical stock count (e.g., Sold, Damaged, Lost).",
+            "reserve_warn": "Reserving stock makes it unavailable for sale but keeps it physically in the warehouse."
+        },
+        "ledger_modal": {
+            "title": "Inventory Ledger",
+            "no_movements": "No movements recorded yet.",
+            "units": "units",
+            "wh": "Warehouse:",
+            "by": "By:"
+        }
+      },
+      "crm": {
+        "tabs": {
+          "all": "All",
+          "my": "My Customers",
+          "pool": "Public Pool",
+          "shared": "Shared"
+        },
+        "search_placeholder": "Search customers...",
+        "batch": {
+          "claim": "Claim Selected",
+          "assign": "Assign To...",
+          "modal_title": "Assign {{count}} Customers To..."
+        },
+        "table": {
+            "name_phone": "Name / Phone",
+            "tags": "Tags",
+            "status": "Status",
+            "last_interaction": "Last Interaction",
+            "next_followup": "Next Follow-up"
+        },
+        "actions": {
+            "claim": "Claim",
+            "return_pool": "Return to Pool"
+        },
+        "badges": {
+            "pool": "Public Pool",
+            "mine": "Mine",
+            "shared": "Shared"
+        },
+        "detail": {
+            "placeholder_name": "Customer Name",
+            "placeholder_phone": "Phone Number",
+            "tags_title": "TAGS",
+            "placeholder_tags": "VIP, New, Corporate (comma separated)",
+            "edit_tags": "+ Edit Tags",
+            "shared_title": "SHARED ACCESS",
+            "add_member": "Add Member",
+            "no_shared": "Not shared with anyone",
+            "activity_title": "ACTIVITY",
+            "last_interaction": "Last Interaction",
+            "created": "Created",
+            "share_modal_title": "Share with...",
+            "add_note": "Add Note",
+            "add_note_placeholder": "Type interaction details...",
+            "set_followup": "Set Follow-up",
+            "post": "Post",
+            "select_role": "Permission Level"
+        }
+      },
+      "recs": {
+        "global_title": "Global Recommendations",
+        "store_title": "Store Recommendations",
+        "override_rule": "Override Rule",
+        "override_desc": "Store configurations completely override Global configurations. When you add items here, Global items will not appear for this store.",
+        "add_product": "Add Product",
+        "table": {
+            "priority": "Priority",
+            "product": "Product",
+            "status": "Status",
+            "stock": "Stock",
+            "schedule": "Schedule",
+            "active": "Active"
+        },
+        "preview": {
+            "title": "App Preview",
+            "limit": "Limit: 12",
+            "no_active": "No recommendations active for this scope.",
+            "store_config": "STORE CONFIG",
+            "global_config": "GLOBAL CONFIG"
+        },
+        "picker": {
+            "title": "Select Product",
+            "added": "Added",
+            "add": "Add",
+            "off_shelf": "OFF SHELF",
+            "unavailable": "UNAVAILABLE"
+        }
+      },
+      "users": {
+        "title": "User Management",
+        "create_btn": "Create User",
+        "no_access": "You do not have permission to access this page.",
+        "table": {
+            "user": "User",
+            "role": "Role",
+            "tenant_scope": "Tenant Scope",
+            "status": "Status"
+        },
+        "modal": {
+            "title_create": "Create New User",
+            "title_edit": "Edit User",
+            "name": "Full Name",
+            "email": "Email",
+            "role": "Role",
+            "assign_store": "Assign Store",
+            "select_store": "Select a store..."
+        }
+      },
+      "audit": {
+        "title": "System Audit Logs",
+        "table": {
+            "timestamp": "Timestamp",
+            "operator": "Operator",
+            "action": "Action",
+            "target": "Target",
+            "details": "Details"
+        }
+      }
+    }
+  },
+  zh: {
+    translation: {
+      "common": {
+        "cancel": "取消",
+        "confirm": "确认",
+        "save": "保存",
+        "edit": "编辑",
+        "delete": "删除",
+        "add": "添加",
+        "actions": "操作",
+        "status": "状态",
+        "search": "搜索...",
+        "filters": "筛选",
+        "import": "导入",
+        "export": "导出",
+        "view_all": "查看全部",
+        "no_data": "暂无数据",
+        "loading": "加载中...",
+        "selected": "项已选择",
+        "done": "完成",
+        "save_changes": "保存更改",
+        "create": "创建",
+        "yes": "是",
+        "no": "否",
+        "on": "操作对象",
+        "main": "主图",
+        "empty_title": "未找到记录",
+        "empty_desc": "请尝试调整搜索词或筛选条件。",
+        "clear_filters": "清空筛选"
+      },
+      "consts": {
+        "role": {
+          "SUPER_ADMIN": "超级管理员",
+          "OPS_GLOBAL": "总部运营",
+          "STORE_MANAGER": "门店店长",
+          "STORE_STAFF": "门店员工"
+        },
+        "shared_role": {
+          "VIEWER": "查看者",
+          "EDITOR": "编辑者",
+          "MANAGER": "管理者"
+        },
+        "status": {
+          "DRAFT": "草稿",
+          "PUBLISHED": "已发布",
+          "UNPUBLISHED": "已下架",
+          "ON_SHELF": "上架中",
+          "OFF_SHELF": "已下架",
+          "ACTIVE": "正常",
+          "DISABLED": "禁用"
+        },
+        "stock": {
+          "IN_STOCK": "现货充足",
+          "TRANSFERABLE": "可调货",
+          "BACKORDER": "可预订",
+          "UNAVAILABLE": "缺货",
+          "LOW_STOCK": "库存紧张",
+          "OUT_OF_STOCK": "售罄"
+        },
+        "warehouse_type": {
+          "STORE": "门店仓",
+          "DC": "总仓(DC)",
+          "VIRTUAL": "虚拟仓"
+        },
+        "target_type": {
+          "USER": "用户",
+          "PRODUCT": "商品",
+          "CUSTOMER": "客户",
+          "RECOMMENDATION": "推荐",
+          "INVENTORY": "库存",
+          "ORDER": "订单"
+        },
+        "action": {
+          "CREATE": "创建",
+          "UPDATE": "更新",
+          "DELETE": "删除",
+          "RECEIVE": "入库",
+          "ISSUE": "出库",
+          "TRANSFER": "调拨",
+          "CLAIM": "领取",
+          "RELEASE": "释放",
+          "SHARE": "共享",
+          "UNSHARE": "取消共享",
+          "RESERVE": "预订锁定"
+        },
+        "interaction_type": {
+            "NOTE": "备注",
+            "CALL": "电话",
+            "VISIT": "拜访",
+            "EMAIL": "邮件"
+        }
+      },
+      "alerts": {
+        "pim": {
+            "delete_confirm": "确定删除 {{count}} 个商品吗？此操作不可撤销。",
+            "sku_name_required": "SKU 和名称为必填项。",
+            "mock_import": "模拟导入已开始",
+            "create_success": "商品创建成功",
+            "update_success": "商品更新成功",
+            "delete_success": "商品删除成功"
+        },
+        "inventory": {
+            "qty_positive": "数量必须为正数。",
+            "select_wh": "请选择仓库。",
+            "select_source_dest": "请选择来源和目标仓库。",
+            "same_wh": "来源和目标仓库不能相同。",
+            "insufficient_stock": "当前仓库库存不足。",
+            "insufficient_source": "来源仓库库存不足。",
+            "insufficient_available": "可用库存不足，无法预订。",
+            "transfer_success": "库存调拨已提交",
+            "adjust_success": "库存调整成功"
+        },
+        "recs": {
+            "off_shelf_error": "无法添加已全局下架的商品。",
+            "unavailable_error": "无法添加不可售 (UNAVAILABLE) 商品到门店推荐。",
+            "backorder_confirm": "该商品目前处于缺货预订 (BACKORDER) 状态。确定要推荐吗？",
+            "add_success": "推荐已添加"
+        },
+        "crm": {
+            "name_email_required": "姓名和邮箱为必填项。",
+            "store_role_tenant": "门店角色必须选择所属门店。",
+            "claim_success": "客户领取成功",
+            "assign_success": "客户分配成功",
+            "note_added": "互动记录已添加",
+            "shared_success": "成员已添加，权限: {{role}}"
+        }
+      },
+      "nav": {
+        "overview": "概览",
+        "dashboard": "仪表盘",
+        "catalog_stock": "商品与库存",
+        "products": "商品管理 (PIM)",
+        "inventory": "库存中心",
+        "todays_recs": "今日推荐",
+        "global_config": "全局配置",
+        "store_config": "门店配置",
+        "app_preview": "App 预览",
+        "crm": "客户管理",
+        "customers": "客户列表",
+        "admin": "系统管理",
+        "users": "用户与权限",
+        "audit": "审计日志"
+      },
+      "header": {
+        "search_placeholder": "搜索系统 (Cmd+K)...",
+        "role_switch": "开发: 切换角色"
+      },
+      "cmd": {
+        "placeholder": "输入命令或搜索...",
+        "section_nav": "导航",
+        "section_actions": "快捷操作",
+        "section_products": "商品",
+        "section_customers": "客户",
+        "no_results": "未找到结果。",
+        "actions": {
+            "logout": "退出登录",
+            "switch_theme": "切换主题 (Demo)",
+            "reset_data": "重置演示数据"
+        }
+      },
+      "login": {
+        "title": "登录您的账户",
+        "subtitle": "精准管理您的零售业务。",
+        "email_label": "电子邮箱",
+        "password_label": "密码",
+        "sign_in_btn": "登 录",
+        "forgot_password": "忘记密码？",
+        "demo_hint": "演示模式：直接点击登录即可",
+        "footer": {
+            "rights": "© 2024 WR.DO Inc.",
+            "privacy": "隐私政策",
+            "terms": "服务条款"
+        }
+      },
+      "dashboard": {
+        "welcome": "欢迎回来, {{name}}",
+        "welcome_sub": "您当前的登录身份是 <1>{{role}}</1>。请高效管理您的门店推荐、客户关系及系统权限。",
+        "stats": {
+          "total_customers": "总客户数",
+          "active_recs": "生效推荐",
+          "total_products": "商品总数",
+          "audit_events": "审计事件",
+          "total": "总计"
+        },
+        "quick_actions": "快捷操作",
+        "recent_activity": "最近活动",
+        "qa": {
+          "new_product": "新建商品",
+          "stock_in": "入库操作",
+          "create_user": "创建用户",
+          "view_audit": "查看日志"
+        }
+      },
+      "pim": {
+        "search_placeholder": "搜索 SKU 或名称...",
+        "new_product": "新建商品",
+        "filters": {
+            "status_label": "状态",
+            "category_label": "类目",
+            "brand_label": "品牌",
+            "all_statuses": "全部状态",
+            "all_categories": "全部类目",
+            "all_brands": "全部品牌"
+        },
+        "batch": {
+          "publish": "上架",
+          "unpublish": "下架",
+          "delete": "删除"
+        },
+        "table": {
+          "img": "图片",
+          "info": "商品信息",
+          "category": "类目",
+          "status": "状态",
+          "rules": "规则",
+          "backorder": "预订",
+          "transfer": "调货"
+        },
+        "import_modal": {
+          "title": "批量导入商品 (CSV)",
+          "desc": "上传结构化的 CSV 文件以批量创建或更新商品。",
+          "download_template": "下载模板",
+          "start": "开始导入"
+        },
+        "editor": {
+            "title_create": "新建商品",
+            "title_edit": "编辑商品",
+            "tabs": { "info": "信息", "price": "价格", "media": "媒体" },
+            "sku": "SKU",
+            "sku_placeholder": "例如 SKU-001",
+            "brand": "品牌",
+            "brand_placeholder": "例如 Nike",
+            "name": "商品名称",
+            "name_placeholder": "例如 Air Force 1",
+            "description": "商品描述",
+            "description_placeholder": "输入详细的商品描述...",
+            "category": "类目",
+            "category_placeholder": "例如 鞋靴 > 运动鞋",
+            "status": "生命周期状态",
+            "tags": "标签",
+            "tags_help": "输入标签名称并按回车键或逗号 (,) 添加。",
+            "tags_placeholder": "输入标签并回车...",
+            "retail_price": "零售价",
+            "price_placeholder": "0.00",
+            "sales_rules": "销售规则",
+            "allow_backorder": "允许预订 (缺货时)",
+            "allow_transfer": "允许跨店调货",
+            "upload_hint": "点击上传图片或 PDF",
+            "simulated_upload": "(模拟 Presigned URL 上传)",
+            "no_media": "暂无媒体资源",
+            "set_main": "设为主图",
+            "make_main": "设为主图",
+            "remove": "移除"
+        }
+      },
+      "inventory": {
+        "tabs": {
+          "overview": "总览",
+          "by_sku": "按 SKU",
+          "by_warehouse": "按仓库"
+        },
+        "stats": {
+          "total_value": "库存总值",
+          "low_stock": "低库存 SKU",
+          "out_of_stock": "缺货 SKU",
+          "movements": "今日变动"
+        },
+        "recent_movements": "最近库存变动",
+        "low_stock_alerts": "低库存预警",
+        "threshold": "阈值",
+        "restock": "补货",
+        "ledger": "库存流水账",
+        "left": "剩余",
+        "settings": {
+            "title": "库存设置",
+            "low_stock_label": "低库存阈值",
+            "low_stock_desc": "当商品总库存低于此水平时触发预警。"
+        },
+        "table": {
+            "warehouse": "仓库",
+            "on_hand": "现货",
+            "reserved": "预留",
+            "available": "可售",
+            "sku_prod": "SKU / 商品",
+            "in_stock_skus": "有货 SKU",
+            "total_on_hand": "现货总量",
+            "incoming": "在途"
+        },
+        "actions": {
+            "receive": "入库",
+            "issue": "出库/调整",
+            "transfer": "调拨",
+            "adjust": "调整",
+            "reserve": "库存预订"
+        },
+        "modal": {
+            "title_receive": "商品入库",
+            "title_issue": "出库 / 库存调整",
+            "title_transfer": "库存调拨",
+            "title_reserve": "库存预订锁定",
+            "from_wh": "来源仓库",
+            "to_wh": "入库仓库",
+            "target_wh": "目标仓库",
+            "qty": "数量",
+            "issue_warn": "此操作将直接减少物理库存计数（例如：销售、破损、盘亏）。",
+            "reserve_warn": "预订操作会减少可售库存，但实物仍在仓库中（例如：VIP 留货、内部借用）。"
+        },
+        "ledger_modal": {
+            "title": "库存流水账",
+            "no_movements": "暂无变动记录。",
+            "units": "单位",
+            "wh": "仓库:",
+            "by": "操作人:"
+        }
+      },
+      "crm": {
+        "tabs": {
+          "all": "全部",
+          "my": "我的客户",
+          "pool": "公海池",
+          "shared": "协作中"
+        },
+        "search_placeholder": "搜索客户...",
+        "batch": {
+          "claim": "批量领取",
+          "assign": "分配给...",
+          "modal_title": "将 {{count}} 位客户分配给..."
+        },
+        "table": {
+            "name_phone": "姓名 / 电话",
+            "tags": "标签",
+            "status": "状态",
+            "last_interaction": "最近互动",
+            "next_followup": "下次跟进"
+        },
+        "actions": {
+            "claim": "领取",
+            "return_pool": "退回公海"
+        },
+        "badges": {
+            "pool": "公海池",
+            "mine": "我的",
+            "shared": "协作"
+        },
+        "detail": {
+            "placeholder_name": "客户姓名",
+            "placeholder_phone": "电话号码",
+            "tags_title": "标签",
+            "placeholder_tags": "VIP, 新客, 企业客户 (逗号分隔)",
+            "edit_tags": "+ 编辑标签",
+            "shared_title": "共享访问",
+            "add_member": "添加成员",
+            "no_shared": "未与任何人共享",
+            "activity_title": "活动记录",
+            "last_interaction": "最近互动",
+            "created": "创建时间",
+            "share_modal_title": "共享给...",
+            "add_note": "添加记录",
+            "add_note_placeholder": "输入互动详情...",
+            "set_followup": "设置跟进时间",
+            "post": "发布",
+            "select_role": "权限等级"
+        }
+      },
+      "recs": {
+        "global_title": "全局推荐配置",
+        "store_title": "门店推荐配置",
+        "override_rule": "覆盖规则",
+        "override_desc": "门店配置将完全覆盖全局配置。当您在此处添加商品时，该门店将不再显示全局推荐的商品。",
+        "add_product": "添加商品",
+        "table": {
+            "priority": "优先级",
+            "product": "商品",
+            "status": "状态",
+            "stock": "库存",
+            "schedule": "排期",
+            "active": "启用"
+        },
+        "preview": {
+            "title": "App 预览",
+            "limit": "显示限制: 12",
+            "no_active": "当前范围内无生效推荐。",
+            "store_config": "门店配置",
+            "global_config": "全局配置"
+        },
+        "picker": {
+            "title": "选择商品",
+            "added": "已添加",
+            "add": "添加",
+            "off_shelf": "已下架",
+            "unavailable": "不可售"
+        }
+      },
+      "users": {
+        "title": "用户管理",
+        "create_btn": "创建用户",
+        "no_access": "您没有权限访问此页面。",
+        "table": {
+            "user": "用户",
+            "role": "角色",
+            "tenant_scope": "所属门店/范围",
+            "status": "状态"
+        },
+        "modal": {
+            "title_create": "创建新用户",
+            "title_edit": "编辑用户",
+            "name": "姓名",
+            "email": "电子邮箱",
+            "role": "角色",
+            "assign_store": "分配门店",
+            "select_store": "选择门店..."
+        }
+      },
+      "audit": {
+        "title": "系统审计日志",
+        "table": {
+            "timestamp": "时间",
+            "operator": "操作人",
+            "action": "动作",
+            "target": "对象",
+            "details": "详情"
+        }
+      }
+    }
+  }
+};
+
+i18n
+  .use(initReactI18next)
+  .init({
+    resources,
+    lng: "en", // default language
+    fallbackLng: "en",
+    interpolation: {
+      escapeValue: false // react already safes from xss
+    }
+  });
+
+export default i18n;
