@@ -202,7 +202,7 @@ export const DocumentEditor: React.FC<DocumentEditorProps> = ({
                                 { value: 'OTHER', label: t('inventory.docs.source.other', '其他') },
                             ]}
                             value={sourceType}
-                            onChange={e => setSourceType(e.target.value as any)}
+                            onChange={e => setSourceType(e.target.value as ReceivingDocument['sourceType'])}
                         />
                     )}
 
@@ -215,7 +215,7 @@ export const DocumentEditor: React.FC<DocumentEditorProps> = ({
                                 { value: 'OTHER', label: t('inventory.docs.issue.other', '其他') },
                             ]}
                             value={issueType}
-                            onChange={e => setIssueType(e.target.value as any)}
+                            onChange={e => setIssueType(e.target.value as IssuingDocument['issueType'])}
                         />
                     )}
                 </div>

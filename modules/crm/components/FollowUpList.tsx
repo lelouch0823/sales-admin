@@ -44,14 +44,15 @@ interface FollowUpListProps {
     customerId: string;
 }
 
-// 跟进类型配置
-const FOLLOW_UP_TYPES: { value: FollowUpType; label: string; icon: React.ElementType }[] = [
-    { value: 'CALL', label: '电话', icon: Phone },
-    { value: 'VISIT', label: '拜访', icon: User },
-    { value: 'EMAIL', label: '邮件', icon: Mail },
-    { value: 'WECHAT', label: '微信', icon: MessageSquare },
-    { value: 'OTHER', label: '其他', icon: Calendar },
-];
+// 跟进类型配置（使用 key 而非直接中文）
+const FOLLOW_UP_TYPE_KEYS = ['CALL', 'VISIT', 'EMAIL', 'WECHAT', 'OTHER'] as const;
+const FOLLOW_UP_ICONS: Record<FollowUpType, React.ElementType> = {
+    CALL: Phone,
+    VISIT: User,
+    EMAIL: Mail,
+    WECHAT: MessageSquare,
+    OTHER: Calendar,
+};
 
 export const FollowUpList: React.FC<FollowUpListProps> = ({
     records,
@@ -120,19 +121,19 @@ export const FollowUpList: React.FC<FollowUpListProps> = ({
                                 {t('crm.followup.type', '跟进方式')}
                             </label>
                             <div className="flex flex-wrap gap-2">
-                                {FOLLOW_UP_TYPES.map(type => {
-                                    const Icon = type.icon;
+                                {FOLLOW_UP_TYPE_KEYS.map(typeKey => {
+                                    const Icon = FOLLOW_UP_ICONS[typeKey];
                                     return (
                                         <button
-                                            key={type.value}
-                                            onClick={() => setNewType(type.value)}
-                                            className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm transition-colors ${newType === type.value
-                                                    ? 'bg-primary text-white border-primary'
-                                                    : 'bg-white text-gray-600 border-gray-200 hover:border-primary'
+                                            key={typeKey}
+                                            onClick={() => setNewType(typeKey)}
+                                            className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm transition-colors ${newType === typeKey
+                                                ? 'bg-primary text-white border-primary'
+                                                : 'bg-white text-gray-600 border-gray-200 hover:border-primary'
                                                 }`}
                                         >
                                             <Icon size={14} />
-                                            {type.label}
+                                            {t(`crm.followup.type_${typeKey.toLowerCase()}`, typeKey)}
                                         </button>
                                     );
                                 })}
@@ -182,8 +183,7 @@ export const FollowUpList: React.FC<FollowUpListProps> = ({
                     </div>
                 ) : (
                     records.map(record => {
-                        const typeConfig = FOLLOW_UP_TYPES.find(t => t.value === record.type);
-                        const TypeIcon = typeConfig?.icon || MessageSquare;
+                        const TypeIcon = FOLLOW_UP_ICONS[record.type] || MessageSquare;
 
                         return (
                             <Card key={record.id}>
@@ -197,7 +197,7 @@ export const FollowUpList: React.FC<FollowUpListProps> = ({
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-2 mb-1">
                                             <span className="text-sm font-medium text-primary">
-                                                {typeConfig?.label || record.type}
+                                                {t(`crm.followup.type_${record.type.toLowerCase()}`, record.type)}
                                             </span>
                                             <span className="text-xs text-gray-400">·</span>
                                             <span className="text-xs text-gray-500">{record.createdByName}</span>
