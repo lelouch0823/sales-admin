@@ -1,21 +1,55 @@
-import { User } from '../../types';
-import { db, delay } from '../db';
+/**
+ * 用户管理 API
+ * 
+ * 对接后端 /users 接口
+ */
 
-export const userApi = {
-  list: async () => { await delay(); return db.get('users'); },
-  create: async (item: User) => {
-    await delay();
-    const list = db.get('users');
-    list.push(item);
-    db.set('users', list);
-  },
-  update: async (id: string, updates: Partial<User>) => {
-    await delay();
-    const list = db.get('users');
-    const idx = list.findIndex(i => i.id === id);
-    if (idx !== -1) {
-      list[idx] = { ...list[idx], ...updates };
-      db.set('users', list);
-    }
-  }
-};
+import { User } from '../../types';
+import { createApiWithStats, BaseFilterParams } from '../api-factory';
+import { API_ENDPOINTS } from '../../constants/api';
+
+// ============ 类型定义 ============
+
+/** 用户筛选参数 */
+export interface UserFilterParams extends BaseFilterParams {
+  role?: 'admin' | 'manager' | 'user' | 'moderator' | 'guest' | 'super_admin';
+  status?: 'active' | 'inactive' | 'suspended' | 'pending' | 'banned' | 'deleted';
+}
+
+/** 用户统计 */
+export interface UserStats {
+  totalUsers: number;
+  activeUsers: number;
+  inactiveUsers: number;
+  adminUsers: number;
+  managerUsers: number;
+  userGrowthRate: number;
+}
+
+/** 创建用户参数 */
+export interface CreateUserDto {
+  username: string;
+  email: string;
+  password: string;
+  fullName: string;
+  role?: string;
+  status?: string;
+}
+
+/** 更新用户参数 */
+export interface UpdateUserDto {
+  fullName?: string;
+  role?: string;
+  status?: string;
+}
+
+// ============ API 实例 ============
+
+// 使用工厂创建带统计的 CRUD API
+export const userApi = createApiWithStats<
+  User,
+  UserStats,
+  CreateUserDto,
+  UpdateUserDto,
+  UserFilterParams
+>(API_ENDPOINTS.USERS.LIST);

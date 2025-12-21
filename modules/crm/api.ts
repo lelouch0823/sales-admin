@@ -1,21 +1,27 @@
-import { Customer } from './types';
-import { db, delay } from '../../lib/db';
+/**
+ * CRM 客户管理 API
+ * 
+ * 对接后端 /customers 接口
+ */
 
-export const crmApi = {
-  list: async () => { await delay(); return db.get('customers'); },
-  create: async (item: Customer) => {
-    await delay();
-    const list = db.get('customers');
-    list.push(item);
-    db.set('customers', list);
-  },
-  update: async (id: string, updates: Partial<Customer>) => {
-    await delay();
-    const list = db.get('customers');
-    const idx = list.findIndex(i => i.id === id);
-    if (idx !== -1) {
-      list[idx] = { ...list[idx], ...updates };
-      db.set('customers', list);
-    }
-  }
-};
+import { Customer } from './types';
+import { createCrudApi, BaseFilterParams } from '../../lib/api-factory';
+import { API_ENDPOINTS } from '../../constants/api';
+
+// ============ 类型定义 ============
+
+/** 客户筛选参数 */
+export interface CustomerFilterParams extends BaseFilterParams {
+  type?: string;
+  tier?: string;
+  assignedTo?: string;
+  createdFrom?: string;
+  createdTo?: string;
+}
+
+// ============ API 实例 ============
+
+// 使用工厂创建 CRUD API
+export const crmApi = createCrudApi<Customer, Partial<Customer>, Partial<Customer>, CustomerFilterParams>(
+  API_ENDPOINTS.CUSTOMERS.LIST
+);

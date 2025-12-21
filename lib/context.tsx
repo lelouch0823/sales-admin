@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode, useMemo, useEffect } from 'react';
-import { 
-  Tenant, User, Recommendation, AuditLog, SharedMember, 
+import {
+  Tenant, User, Recommendation, AuditLog, SharedMember,
   Warehouse, StockStatus
 } from '../types';
 
@@ -11,7 +11,7 @@ import { InventoryBalance, InventoryMovement, StoreProductState } from '../modul
 
 import { useAuth } from './auth';
 import { productApi, inventoryApi, crmApi, recsApi, userApi, systemApi } from './api';
-import { MOCK_USERS } from './data/users'; 
+import { MOCK_USERS } from './data/users';
 
 /**
  * 全局上下文接口定义 (AppContextType)
@@ -20,7 +20,7 @@ import { MOCK_USERS } from './data/users';
  */
 interface AppContextType {
   currentUser: User; // 当前登录用户
-  
+
   // --- 数据状态 (Data State) ---
   tenants: Tenant[];           // 租户/门店列表
   users: User[];               // 系统用户列表
@@ -31,19 +31,19 @@ interface AppContextType {
   recommendations: Recommendation[]; // 推荐配置列表
   customers: Customer[];       // 客户列表 (CRM)
   logs: AuditLog[];            // 审计日志
-  
+
   // --- 计算属性 (Computed Properties) ---
   storeStock: StoreProductState[]; // 计算后的门店库存状态 (用于推荐系统判断是否缺货)
-  
+
   // --- 推荐模块操作 (Actions: Recommendations) ---
   addRecommendation: (rec: Omit<Recommendation, 'id'>) => Promise<void>;
   updateRecommendation: (id: string, updates: Partial<Recommendation>) => Promise<void>;
   deleteRecommendation: (id: string) => Promise<void>;
-  
+
   // --- PIM 模块操作 (Actions: PIM) ---
   addProduct: (product: Omit<Product, 'id'>) => Promise<void>;
   updateProduct: (id: string, updates: Partial<Product>) => Promise<void>;
-  
+
   // --- 库存模块操作 (Actions: Inventory) ---
   /**
    * 调整库存 (入库/出库/锁定)
@@ -62,19 +62,19 @@ interface AppContextType {
   updateCustomer: (id: string, updates: Partial<Customer>) => Promise<void>;
   claimCustomer: (customerId: string, userId: string) => Promise<void>; // 领取公海客户
   releaseCustomer: (customerId: string) => Promise<void>; // 退回公海
-  
+
   addSharedMember: (customerId: string, member: SharedMember) => Promise<void>; // 添加协作成员
   removeSharedMember: (customerId: string, userId: string) => Promise<void>; // 移除协作成员
-  
+
   // --- 系统管理操作 (Actions: Admin) ---
   addUser: (user: Omit<User, 'id'>) => Promise<void>;
   updateUser: (id: string, updates: Partial<User>) => Promise<void>;
-  
+
   // --- 工具方法 (Utilities) ---
   logAction: (action: string, targetType: string, targetId: string, details: string) => void; // 记录审计日志
   switchUser: (userId: string) => void; // 开发调试：快速切换用户身份
   resetDemoData: () => void; // 重置演示数据到初始状态
-  
+
   // --- 元数据 ---
   isLoadingData: boolean; // 数据是否正在加载
 }
@@ -169,29 +169,29 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const storeStock = useMemo(() => {
     const computed: StoreProductState[] = [];
     products.forEach(p => {
-        warehouses.filter(w => w.type === 'STORE').forEach(w => {
-            const bal = inventory.find(i => i.sku === p.sku && i.warehouseId === w.id);
-            const available = bal ? bal.onHand - bal.reserved : 0;
-            
-            let status: StockStatus = 'UNAVAILABLE';
-            
-            if (available > 0) {
-              status = 'IN_STOCK'; // 有现货
-            } else if (p.allowBackorder) {
-              status = 'BACKORDER'; // 允许缺货预订
-            } else if (p.allowTransfer) {
-                 // 检查总仓(DC)是否有货
-                 const dcStock = inventory.find(i => i.sku === p.sku && i.warehouseId.includes('dc'))?.onHand || 0;
-                 if (dcStock > 0) status = 'TRANSFERABLE'; // 允许调货
-            }
+      warehouses.filter(w => w.type === 'STORE').forEach(w => {
+        const bal = inventory.find(i => i.sku === p.sku && i.warehouseId === w.id);
+        const available = bal ? bal.onHand - bal.reserved : 0;
 
-            computed.push({
-                productId: p.id,
-                tenantId: w.tenantId,
-                stockStatus: status,
-                stockCount: available
-            });
+        let status: StockStatus = 'UNAVAILABLE';
+
+        if (available > 0) {
+          status = 'IN_STOCK'; // 有现货
+        } else if (p.allowBackorder) {
+          status = 'BACKORDER'; // 允许缺货预订
+        } else if (p.allowTransfer) {
+          // 检查总仓(DC)是否有货
+          const dcStock = inventory.find(i => i.sku === p.sku && i.warehouseId.includes('dc'))?.onHand || 0;
+          if (dcStock > 0) status = 'TRANSFERABLE'; // 允许调货
+        }
+
+        computed.push({
+          productId: p.id,
+          tenantId: w.tenantId,
+          stockStatus: status,
+          stockCount: available
         });
+      });
     });
     return computed;
   }, [products, inventory, warehouses]);
@@ -213,19 +213,19 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   const adjustInventory = async (sku: string, warehouseId: string, quantity: number, type: 'RECEIVE' | 'ISSUE' | 'RESERVE') => {
-    // 构造库存移动单据
-    const newMovement: InventoryMovement = {
-        id: Math.random().toString(36).substr(2, 9),
-        sku,
-        warehouseId,
-        type,
-        quantity,
-        operatorId: currentUser.id,
-        timestamp: new Date().toLocaleString()
-    };
-    
-    // 调用 API (模拟事务性操作)
-    await inventoryApi.adjust(newMovement);
+    // 查找或创建库存记录 ID
+    const existingBalance = inventory.find(b => b.sku === sku && b.warehouseId === warehouseId);
+    const inventoryId = existingBalance?.id || `temp-${Date.now()}`;
+
+    // 调用 API
+    await inventoryApi.adjust({
+      inventoryId,
+      newQuantity: type === 'RECEIVE'
+        ? (existingBalance?.onHand || 0) + quantity
+        : Math.max(0, (existingBalance?.onHand || 0) - quantity),
+      reason: type.toLowerCase(),
+      notes: `${type} quantity ${quantity} for SKU ${sku}`
+    });
     logAction(type, 'INVENTORY', `${sku}@${warehouseId}`, `${type} quantity ${quantity}`);
     await refreshData();
   };
@@ -285,24 +285,32 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const customer = customers.find(c => c.id === customerId);
     // 避免重复添加
     if (customer && !customer.sharedWith.some(s => s.userId === member.userId)) {
-        const newShared = [...customer.sharedWith, member];
-        await updateCustomer(customerId, { sharedWith: newShared });
-        logAction('SHARE', 'CUSTOMER', customerId, `Added shared member ${member.userId}`);
+      const newShared = [...customer.sharedWith, member];
+      await updateCustomer(customerId, { sharedWith: newShared });
+      logAction('SHARE', 'CUSTOMER', customerId, `Added shared member ${member.userId}`);
     }
   };
 
   const removeSharedMember = async (customerId: string, userId: string) => {
     const customer = customers.find(c => c.id === customerId);
     if (customer) {
-        const newShared = customer.sharedWith.filter(s => s.userId !== userId);
-        await updateCustomer(customerId, { sharedWith: newShared });
-        logAction('UNSHARE', 'CUSTOMER', customerId, `Removed shared member ${userId}`);
+      const newShared = customer.sharedWith.filter(s => s.userId !== userId);
+      await updateCustomer(customerId, { sharedWith: newShared });
+      logAction('UNSHARE', 'CUSTOMER', customerId, `Removed shared member ${userId}`);
     }
   };
 
   const addUser = async (user: Omit<User, 'id'>) => {
     const newUser = { ...user, id: Math.random().toString(36).substr(2, 9) };
-    await userApi.create(newUser as User);
+    // 转换为 CreateUserDto 格式
+    await userApi.create({
+      username: newUser.email.split('@')[0], // 从 email 生成 username
+      email: newUser.email,
+      password: 'TempPassword123!', // 临时密码，实际应从表单获取
+      fullName: newUser.name, // 前端 User.name -> 后端 fullName
+      role: newUser.role,
+      status: newUser.status,
+    });
     logAction('CREATE', 'USER', newUser.id, `Created user ${newUser.name}`);
     await refreshData();
   };
@@ -315,13 +323,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   // 调试功能：清除 localStorage 重置数据
   const resetDemoData = () => {
-      localStorage.removeItem('WR_DO_DB_V2');
-      window.location.reload();
+    localStorage.removeItem('WR_DO_DB_V2');
+    window.location.reload();
   };
 
   return (
     <AppContext.Provider value={{
-      currentUser, tenants, users, products, recommendations, customers, logs, storeStock, 
+      currentUser, tenants, users, products, recommendations, customers, logs, storeStock,
       warehouses, inventory, movements,
       isLoadingData,
       addRecommendation, updateRecommendation, deleteRecommendation,
@@ -329,8 +337,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       addSharedMember, removeSharedMember,
       addUser, updateUser,
       addProduct, updateProduct, adjustInventory, transferInventory,
-      logAction, 
-      switchUser: authSwitchUser, 
+      logAction,
+      switchUser: authSwitchUser,
       resetDemoData
     }}>
       {children}

@@ -2,11 +2,17 @@
  * API 配置常量
  */
 
+import { env } from '../config/env';
+
 // API 基础配置
 export const API_CONFIG = {
-    BASE_URL: (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_API_URL) || '/api',
-    TIMEOUT: 10000,
+    /** API 基础 URL (根据环境自动切换) */
+    BASE_URL: env.apiBaseUrl,
+    /** 请求超时时间 (ms) */
+    TIMEOUT: env.apiTimeout,
+    /** 重试次数 */
     RETRY_COUNT: 3,
+    /** 重试间隔 (ms) */
     RETRY_DELAY: 1000,
 } as const;
 
@@ -17,7 +23,8 @@ export const API_ENDPOINTS = {
         LOGIN: '/auth/login',
         LOGOUT: '/auth/logout',
         REFRESH: '/auth/refresh',
-        ME: '/auth/me',
+        PROFILE: '/auth/profile',
+        CHANGE_PASSWORD: '/auth/change-password',
     },
 
     // 用户管理

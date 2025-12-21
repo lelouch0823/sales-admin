@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef } from 'react';
 import { User, Role } from '../types';
 import { MOCK_USERS } from './data/users';
-import { authApi, ApiError } from './api';
+import { authApi, HttpError } from './api';
 import { useToast } from './toast';
 
 // --- 类型定义 ---
@@ -42,7 +42,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const { success, error: toastError, info } = useToast();
-  
+
   // 定时器引用，用于定期检查 Session 过期
   const checkIntervalRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -71,11 +71,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         const storedSessionStr = localStorage.getItem(STORAGE_KEY);
         if (storedSessionStr) {
           const session: AuthSession = JSON.parse(storedSessionStr);
-          
+
           if (validateSession(session)) {
-             // 模拟 Token 验证的网络延迟
+            // 模拟 Token 验证的网络延迟
             await new Promise(resolve => setTimeout(resolve, 400));
-            
+
             const foundUser = MOCK_USERS.find(u => u.id === session.userId);
             if (foundUser) {
               setUser(foundUser);
@@ -109,16 +109,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     // 每分钟检查一次 Session 是否仍然有效
     checkIntervalRef.current = setInterval(() => {
-       const storedSessionStr = localStorage.getItem(STORAGE_KEY);
-       if (storedSessionStr) {
-         const session: AuthSession = JSON.parse(storedSessionStr);
-         if (!validateSession(session)) {
-           clearSession(true); // 显示过期提示并登出
-         }
-       } else {
-         // Session 被外部删除 (例如在另一个 Tab 登出)
-         clearSession(); 
-       }
+      const storedSessionStr = localStorage.getItem(STORAGE_KEY);
+      if (storedSessionStr) {
+        const session: AuthSession = JSON.parse(storedSessionStr);
+        if (!validateSession(session)) {
+          clearSession(true); // 显示过期提示并登出
+        }
+      } else {
+        // Session 被外部删除 (例如在另一个 Tab 登出)
+        clearSession();
+      }
     }, 60 * 1000);
 
     return () => {
@@ -131,22 +131,24 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const login = async (email: string, password?: string, rememberMe: boolean = false) => {
     setIsLoading(true);
     setError(null);
-    
+
     try {
-      const response = await authApi.login(email, password, rememberMe);
-      
+      const response = await authApi.login(email, password || '', rememberMe);
+
       setUser(response.user);
-      
+
+      // 计算过期时间（默认 24 小时，记住我则 7 天）
+      const duration = rememberMe ? 7 * 24 * 3600 * 1000 : 24 * 3600 * 1000;
       const session: AuthSession = {
-        token: response.token,
+        token: response.accessToken,
         userId: response.user.id,
-        expiresAt: response.expiresAt
+        expiresAt: Date.now() + duration
       };
-      
+
       localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
       success(`Welcome back, ${response.user.name}`);
     } catch (err) {
-      if (err instanceof ApiError) {
+      if (err instanceof HttpError) {
         setError(err.message);
         toastError(err.message);
       } else {
@@ -171,9 +173,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setUser(foundUser);
       // 更新 Session 以保持持久化
       const session: AuthSession = {
-         token: `mock_impersonate_${Date.now()}`,
-         userId: foundUser.id,
-         expiresAt: Date.now() + 24 * 60 * 60 * 1000
+        token: `mock_impersonate_${Date.now()}`,
+        userId: foundUser.id,
+        expiresAt: Date.now() + 24 * 60 * 60 * 1000
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
       success(`Switched to user: ${foundUser.name}`);
@@ -184,7 +186,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const hasRole = (allowedRoles: Role[]): boolean => {
     if (!user) return false;
     // 超级管理员拥有所有权限
-    if (user.role === 'SUPER_ADMIN') return true; 
+    if (user.role === 'SUPER_ADMIN') return true;
     return allowedRoles.includes(user.role);
   };
 
