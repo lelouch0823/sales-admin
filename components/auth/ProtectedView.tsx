@@ -2,7 +2,6 @@ import React from 'react';
 import { ShieldAlert, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../../lib/auth';
 import { Role } from '../../types';
-import { useTranslation } from 'react-i18next';
 import { Button } from '../ui';
 
 interface ProtectedViewProps {
@@ -16,10 +15,9 @@ export const ProtectedView: React.FC<ProtectedViewProps> = ({
   children,
   allowedRoles,
   fallback,
-  onBack
+  onBack,
 }) => {
   const { hasRole } = useAuth();
-  const { t: _t } = useTranslation();
 
   // If no roles defined, assume it's open to authenticated users (who are already checked by App.tsx)
   if (!allowedRoles || allowedRoles.length === 0) {

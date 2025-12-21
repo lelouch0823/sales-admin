@@ -42,9 +42,7 @@ interface ImportMetaEnv {
  * 安全读取 Vite 环境变量
  */
 function getEnvVar(key: string, defaultValue: string = ''): string {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Vite import.meta.env 类型在非 Vite 环境下不可用
   if (typeof import.meta !== 'undefined' && (import.meta as { env?: ImportMetaEnv }).env) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return ((import.meta as { env?: ImportMetaEnv }).env as ImportMetaEnv)[key] ?? defaultValue;
   }
   // Node.js 环境 (测试等)
@@ -139,8 +137,10 @@ export const env: EnvConfig = {
  */
 export function logEnvInfo(): void {
   if (env.isDevelopment) {
+    /* eslint-disable no-console */
     console.log('🌍 Environment:', ENV);
     console.log('🔗 API Base URL:', env.apiBaseUrl);
     console.log('🎭 Use Mock:', env.useMock);
+    /* eslint-enable no-console */
   }
 }

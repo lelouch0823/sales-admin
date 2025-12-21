@@ -8,10 +8,11 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '../components/ui';
 import { AnimatedBox } from '../components/motion';
 import { Tooltip, TooltipProvider } from '../components/primitives';
+import type { UserFormData } from '../lib/schemas';
 
 /**
  * 用户管理视图 (UsersView)
- * 
+ *
  * 使用封装:
  * - AnimatedBox: 入场动画
  * - Tooltip: 操作按钮提示
@@ -34,13 +35,20 @@ export const UsersView: React.FC = () => {
     setIsModalOpen(true);
   };
 
-  const handleSaveUser = (userData: any) => {
+  const handleSaveUser = (userData: UserFormData) => {
     if (editingUserId) {
-      updateUser(editingUserId, userData);
+      updateUser(editingUserId, {
+        ...userData,
+        status: userData.isActive ? 'ACTIVE' : 'DISABLED',
+      });
     } else {
       addUser({
-        ...userData,
-        avatarUrl: `https://i.pravatar.cc/150?u=${Math.random()}`
+        name: userData.name,
+        email: userData.email,
+        role: userData.role,
+        tenantId: userData.tenantId,
+        status: userData.isActive ? 'ACTIVE' : 'DISABLED',
+        avatarUrl: `https://i.pravatar.cc/150?u=${Math.random()}`,
       });
     }
     setIsModalOpen(false);
@@ -80,7 +88,11 @@ export const UsersView: React.FC = () => {
                     <tr key={user.id} className="hover:bg-gray-50/40">
                       <td className="py-4 px-6">
                         <div className="flex items-center gap-3">
-                          <img src={user.avatarUrl} alt="" className="w-8 h-8 rounded-full bg-gray-200" />
+                          <img
+                            src={user.avatarUrl}
+                            alt=""
+                            className="w-8 h-8 rounded-full bg-gray-200"
+                          />
                           <div>
                             <div className="font-medium text-primary text-sm">{user.name}</div>
                             <div className="text-xs text-gray-500">{user.email}</div>
@@ -96,11 +108,21 @@ export const UsersView: React.FC = () => {
                         {getTenantName(user.tenantId)}
                       </td>
                       <td className="py-4 px-6">
-                        <Tooltip content={user.status === 'ACTIVE' ? t('consts.status.ACTIVE') : t('consts.status.DISABLED')}>
+                        <Tooltip
+                          content={
+                            user.status === 'ACTIVE'
+                              ? t('consts.status.ACTIVE')
+                              : t('consts.status.DISABLED')
+                          }
+                        >
                           <span>
                             <Toggle
                               enabled={user.status === 'ACTIVE'}
-                              onToggle={() => updateUser(user.id, { status: user.status === 'ACTIVE' ? 'DISABLED' : 'ACTIVE' })}
+                              onToggle={() =>
+                                updateUser(user.id, {
+                                  status: user.status === 'ACTIVE' ? 'DISABLED' : 'ACTIVE',
+                                })
+                              }
                             />
                           </span>
                         </Tooltip>

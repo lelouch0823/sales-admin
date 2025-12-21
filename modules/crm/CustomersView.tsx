@@ -14,14 +14,23 @@ import { Tooltip, TooltipProvider } from '../../components/primitives';
 
 /**
  * 客户管理视图 (CustomersView)
- * 
+ *
  * 使用封装:
  * - AnimatedBox: 列表和批量操作栏动画
  * - Tooltip: 操作按钮提示
  * - dateUtils: 日期比较逻辑
  */
 export const CustomersView: React.FC = () => {
-  const { customers, currentUser, users, claimCustomer, releaseCustomer, addSharedMember, removeSharedMember, updateCustomer } = useApp();
+  const {
+    customers,
+    currentUser,
+    users,
+    claimCustomer,
+    releaseCustomer,
+    addSharedMember,
+    removeSharedMember,
+    updateCustomer,
+  } = useApp();
   const { t } = useTranslation();
   const toast = useToast();
 
@@ -51,17 +60,18 @@ export const CustomersView: React.FC = () => {
     if (tab === 'SHARED') matchesTab = c.sharedWith.some(s => s.userId === currentUser.id);
 
     // 3. 搜索关键词过滤
-    const matchesSearch = c.name.toLowerCase().includes(search.toLowerCase()) || c.phone.includes(search);
+    const matchesSearch =
+      c.name.toLowerCase().includes(search.toLowerCase()) || c.phone.includes(search);
 
     return matchesTab && matchesSearch;
   });
 
   // 权限检查
-  const canShare = selectedCustomer && (
-    selectedCustomer.ownerUserId === currentUser.id ||
-    currentUser.role === 'SUPER_ADMIN' ||
-    selectedCustomer.sharedWith.some(s => s.userId === currentUser.id && s.role === 'MANAGER')
-  );
+  const canShare =
+    selectedCustomer &&
+    (selectedCustomer.ownerUserId === currentUser.id ||
+      currentUser.role === 'SUPER_ADMIN' ||
+      selectedCustomer.sharedWith.some(s => s.userId === currentUser.id && s.role === 'MANAGER'));
 
   const canEdit = canShare;
 
@@ -96,15 +106,18 @@ export const CustomersView: React.FC = () => {
 
   const getTabLabel = (key: string) => {
     switch (key) {
-      case 'ALL': return t('crm.tabs.all');
-      case 'MY': return t('crm.tabs.my');
-      case 'POOL': return t('crm.tabs.pool');
-      case 'SHARED': return t('crm.tabs.shared');
-      default: return key;
+      case 'ALL':
+        return t('crm.tabs.all');
+      case 'MY':
+        return t('crm.tabs.my');
+      case 'POOL':
+        return t('crm.tabs.pool');
+      case 'SHARED':
+        return t('crm.tabs.shared');
+      default:
+        return key;
     }
-  }
-
-
+  };
 
   return (
     <TooltipProvider>
@@ -113,14 +126,18 @@ export const CustomersView: React.FC = () => {
         <div className="flex flex-col md:flex-row gap-4 justify-between items-start md:items-center">
           {/* Tab 切换器 */}
           <div className="flex p-1 bg-gray-100 rounded-lg">
-            {['ALL', 'MY', 'POOL', 'SHARED'].map((t) => (
+            {['ALL', 'MY', 'POOL', 'SHARED'].map(t => (
               <button
                 key={t}
-                onClick={() => { setTab(t as any); setSelectedIds(new Set()); }}
-                className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all ${tab === t
-                  ? 'bg-white text-primary shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700'
-                  }`}
+                onClick={() => {
+                  setTab(t as 'MY' | 'POOL' | 'SHARED' | 'ALL');
+                  setSelectedIds(new Set());
+                }}
+                className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all ${
+                  tab === t
+                    ? 'bg-white text-primary shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
               >
                 {getTabLabel(t)}
               </button>
@@ -134,7 +151,7 @@ export const CustomersView: React.FC = () => {
                 type="text"
                 placeholder={t('crm.search_placeholder')}
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={e => setSearch(e.target.value)}
                 className="w-full pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:border-brand transition-colors"
               />
             </div>
@@ -148,8 +165,13 @@ export const CustomersView: React.FC = () => {
 
         {/* 批量操作栏 */}
         {selectedIds.size > 0 && (
-          <AnimatedBox animation="fadeInUp" className="bg-primary text-white px-4 py-3 rounded-lg flex items-center justify-between shadow-lg">
-            <div className="text-sm font-medium pl-2">{selectedIds.size} {t('common.selected')}</div>
+          <AnimatedBox
+            animation="fadeInUp"
+            className="bg-primary text-white px-4 py-3 rounded-lg flex items-center justify-between shadow-lg"
+          >
+            <div className="text-sm font-medium pl-2">
+              {selectedIds.size} {t('common.selected')}
+            </div>
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setSelectedIds(new Set())}
@@ -185,7 +207,11 @@ export const CustomersView: React.FC = () => {
                   <tr className="bg-gray-50/50 border-b border-gray-100 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                     <th className="py-4 px-6 w-12">
                       <button onClick={toggleAll} className="text-gray-400 hover:text-gray-600">
-                        {selectedIds.size > 0 && selectedIds.size === filteredCustomers.length ? <CheckSquare size={16} /> : <Square size={16} />}
+                        {selectedIds.size > 0 && selectedIds.size === filteredCustomers.length ? (
+                          <CheckSquare size={16} />
+                        ) : (
+                          <Square size={16} />
+                        )}
                       </button>
                     </th>
                     <th className="py-4 px-6">{t('crm.table.name_phone')}</th>

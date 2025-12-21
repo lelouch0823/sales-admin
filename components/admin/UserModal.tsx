@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { User, Tenant } from '../../types';
+import { RoleId } from '../../constants/roles';
 import { Modal } from '../common/Modal';
 import { useTranslation } from 'react-i18next';
 import { Button, Input, Select } from '../ui';
@@ -16,12 +17,18 @@ interface UserModalProps {
 
 /**
  * 用户创建/编辑模态框
- * 
+ *
  * 使用封装:
  * - useZodForm: 表单验证 (react-hook-form + zod)
  * - userSchema: Zod 验证 schema
  */
-export const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, userToEdit, tenants, onSave }) => {
+export const UserModal: React.FC<UserModalProps> = ({
+  isOpen,
+  onClose,
+  userToEdit,
+  tenants,
+  onSave,
+}) => {
   const { t } = useTranslation();
 
   const {
@@ -30,7 +37,7 @@ export const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, userToEdi
     watch,
     reset,
     setValue,
-    formState: { errors }
+    formState: { errors },
   } = useZodForm({
     schema: userSchema,
     defaultValues: {
@@ -39,7 +46,7 @@ export const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, userToEdi
       role: 'STORE_MANAGER',
       tenantId: '',
       isActive: true,
-    }
+    },
   });
 
   const role = watch('role');
@@ -92,7 +99,8 @@ export const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, userToEdi
       title={userToEdit ? t('users.modal.title_edit') : t('users.modal.title_create')}
       className="max-w-md"
     >
-      <form onSubmit={handleSubmit(onSubmit as any)} className="space-y-4">
+      {/* @ts-expect-error - Known react-hook-form + zod type compatibility issue */}
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <Input
           label={t('users.modal.name')}
           {...register('name')}
@@ -112,7 +120,7 @@ export const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, userToEdi
           label={t('users.modal.role')}
           options={roleOptions}
           value={role}
-          onChange={e => setValue('role', e.target.value as any)}
+          onChange={e => setValue('role', e.target.value as RoleId)}
         />
 
         {(role === 'STORE_MANAGER' || role === 'STORE_STAFF') && (

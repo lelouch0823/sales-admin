@@ -1,4 +1,12 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+  useCallback,
+  useRef,
+} from 'react';
 import { User, Role } from '../types';
 import { MOCK_USERS } from './data/users';
 import { authApi, HttpError } from './api';
@@ -55,13 +63,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, []);
 
   // --- 辅助方法: 清除 Session (登出) ---
-  const clearSession = useCallback((showToast: boolean = false) => {
-    setUser(null);
-    localStorage.removeItem(STORAGE_KEY);
-    if (showToast) {
-      info('Session expired. Please log in again.');
-    }
-  }, [info]);
+  const clearSession = useCallback(
+    (showToast: boolean = false) => {
+      setUser(null);
+      localStorage.removeItem(STORAGE_KEY);
+      if (showToast) {
+        info('Session expired. Please log in again.');
+      }
+    },
+    [info]
+  );
 
   // --- 1. 初始化 / 恢复 Session ---
   // 应用启动时检查本地存储的 Session
@@ -84,12 +95,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
               clearSession();
             }
           } else {
+            // eslint-disable-next-line no-console
             console.log('Session expired during init');
             clearSession();
           }
         }
       } catch (e) {
-        console.error("Auth init failed", e);
+        console.error('Auth init failed', e);
         clearSession();
       } finally {
         setIsLoading(false);
@@ -126,7 +138,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     };
   }, [user, validateSession, clearSession]);
 
-
   // --- 3. 登录动作 ---
   const login = async (email: string, password?: string, rememberMe: boolean = false) => {
     setIsLoading(true);
@@ -142,7 +153,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const session: AuthSession = {
         token: response.accessToken,
         userId: response.user.id,
-        expiresAt: Date.now() + duration
+        expiresAt: Date.now() + duration,
       };
 
       localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
@@ -175,7 +186,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const session: AuthSession = {
         token: `mock_impersonate_${Date.now()}`,
         userId: foundUser.id,
-        expiresAt: Date.now() + 24 * 60 * 60 * 1000
+        expiresAt: Date.now() + 24 * 60 * 60 * 1000,
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
       success(`Switched to user: ${foundUser.name}`);
@@ -191,16 +202,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   return (
-    <AuthContext.Provider value={{
-      user,
-      isAuthenticated: !!user,
-      isLoading,
-      error,
-      login,
-      logout,
-      switchUser,
-      hasRole
-    }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        isAuthenticated: !!user,
+        isLoading,
+        error,
+        login,
+        logout,
+        switchUser,
+        hasRole,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

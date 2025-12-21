@@ -40,8 +40,8 @@ export const LoginForm: React.FC = () => {
   };
 
   return (
-    // @ts-expect-error - Known react-hook-form + zod type compatibility issue with SubmitHandler
     <form
+      // @ts-expect-error - Known react-hook-form + zod type compatibility issue with handleSubmit
       onSubmit={handleSubmit(onSubmit)}
       className="w-full max-w-sm space-y-8 animate-in slide-in-from-right-8 duration-500"
     >
