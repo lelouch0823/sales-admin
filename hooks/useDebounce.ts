@@ -5,38 +5,38 @@
 import { useState, useEffect } from 'react';
 
 export function useDebounce<T>(value: T, delay: number = 300): T {
-    const [debouncedValue, setDebouncedValue] = useState<T>(value);
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
 
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setDebouncedValue(value);
-        }, delay);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
 
-        return () => {
-            clearTimeout(timer);
-        };
-    }, [value, delay]);
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [value, delay]);
 
-    return debouncedValue;
+  return debouncedValue;
 }
 
 /**
  * useDebouncedCallback Hook
  * 返回一个防抖版本的回调函数
  */
-export function useDebouncedCallback<T extends (...args: any[]) => any>(
-    callback: T,
-    delay: number = 300
+export function useDebouncedCallback<T extends (...args: unknown[]) => unknown>(
+  callback: T,
+  delay: number = 300
 ): (...args: Parameters<T>) => void {
-    const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
+  const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
 
-    return (...args: Parameters<T>) => {
-        if (timeoutId) {
-            clearTimeout(timeoutId);
-        }
-        const id = setTimeout(() => {
-            callback(...args);
-        }, delay);
-        setTimeoutId(id);
-    };
+  return (...args: Parameters<T>) => {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+    const id = setTimeout(() => {
+      callback(...args);
+    }, delay);
+    setTimeoutId(id);
+  };
 }

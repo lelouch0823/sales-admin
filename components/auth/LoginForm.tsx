@@ -3,12 +3,12 @@ import { useTranslation } from 'react-i18next';
 import { ArrowRight, AlertCircle, Check } from 'lucide-react';
 import { useAuth } from '../../lib/auth';
 import { Button, Input } from '../ui';
-import { useZodForm } from '../../hooks';
+import { useZodForm, SubmitHandler } from '../../hooks';
 import { loginSchema, LoginFormData } from '../../lib/schemas';
 
 /**
  * 登录表单组件
- * 
+ *
  * 使用封装:
  * - useZodForm: 表单验证 (react-hook-form + zod)
  * - loginSchema: Zod 验证 schema
@@ -23,24 +23,28 @@ export const LoginForm: React.FC = () => {
     handleSubmit,
     watch,
     setValue,
-    formState: { errors }
-  } = useZodForm({
+    formState: { errors },
+  } = useZodForm<LoginFormData>({
     schema: loginSchema,
     defaultValues: {
       email: 'alice@wr.do',
       password: 'password',
       rememberMe: false,
-    }
+    },
   });
 
   const rememberMe = watch('rememberMe');
 
-  const onSubmit = async (data: LoginFormData) => {
+  const onSubmit: SubmitHandler<LoginFormData> = async data => {
     await login(data.email, data.password, data.rememberMe ?? false);
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit as any)} className="w-full max-w-sm space-y-8 animate-in slide-in-from-right-8 duration-500">
+    // @ts-expect-error - Known react-hook-form + zod type compatibility issue with SubmitHandler
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className="w-full max-w-sm space-y-8 animate-in slide-in-from-right-8 duration-500"
+    >
       <div>
         <h2 className="text-2xl font-bold text-primary tracking-tight">{t('login.title')}</h2>
         <p className="text-sm text-muted mt-2">{t('login.subtitle')}</p>
@@ -66,8 +70,12 @@ export const LoginForm: React.FC = () => {
 
         <div>
           <div className="flex items-center justify-between mb-1">
-            <label className="block text-xs font-bold text-gray-500 uppercase">{t('login.password_label')}</label>
-            <a href="#" className="text-xs font-medium text-primary hover:text-primary-hover">{t('login.forgot_password')}</a>
+            <label className="block text-xs font-bold text-gray-500 uppercase">
+              {t('login.password_label')}
+            </label>
+            <a href="#" className="text-xs font-medium text-primary hover:text-primary-hover">
+              {t('login.forgot_password')}
+            </a>
           </div>
           <Input
             type="password"
@@ -104,7 +112,12 @@ export const LoginForm: React.FC = () => {
             className="shadow-lg shadow-gray-900/10"
           >
             {t('login.sign_in_btn')}
-            {!isLoading && <ArrowRight size={16} className="ml-2 group-hover:translate-x-1 transition-transform" />}
+            {!isLoading && (
+              <ArrowRight
+                size={16}
+                className="ml-2 group-hover:translate-x-1 transition-transform"
+              />
+            )}
           </Button>
         </div>
 
