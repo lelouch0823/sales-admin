@@ -1,26 +1,27 @@
-import { Recommendation } from './types';
-import { db, delay } from '../../lib/db';
+/**
+ * 推荐系统 API
+ *
+ * 对接后端 /recommendations 接口
+ */
 
-export const recsApi = {
-  list: async () => { await delay(); return db.get('recommendations'); },
-  create: async (item: Recommendation) => {
-    await delay();
-    const list = db.get('recommendations');
-    list.push(item);
-    db.set('recommendations', list);
-  },
-  update: async (id: string, updates: Partial<Recommendation>) => {
-    await delay();
-    const list = db.get('recommendations');
-    const idx = list.findIndex(i => i.id === id);
-    if (idx !== -1) {
-      list[idx] = { ...list[idx], ...updates };
-      db.set('recommendations', list);
-    }
-  },
-  delete: async (id: string) => {
-    await delay();
-    const list = db.get('recommendations');
-    db.set('recommendations', list.filter(r => r.id !== id));
-  }
-};
+import { Recommendation } from './types';
+import { createCrudApi, BaseFilterParams } from '../../lib/api-factory';
+import { API_ENDPOINTS } from '../../constants/api';
+
+// ============ 类型定义 ============
+
+/** 推荐筛选参数 */
+export interface RecommendationFilterParams extends BaseFilterParams {
+  tenantId?: string;
+  productId?: string;
+  isEnabled?: boolean;
+  startFrom?: string;
+  endTo?: string;
+}
+
+// ============ API 实例 ============
+
+// 使用工厂创建 CRUD API
+export const recsApi = createCrudApi<Recommendation, Partial<Recommendation>, Partial<Recommendation>, RecommendationFilterParams>(
+  API_ENDPOINTS.RECOMMENDATIONS.LIST
+);

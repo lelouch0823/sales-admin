@@ -213,3 +213,88 @@ describe('tokenManager', () => {
         expect(tokenManager.getRefreshToken()).toBeNull();
     });
 });
+
+describe('http 重试机制', () => {
+    beforeEach(() => {
+        mockFetch.mockReset();
+        localStorageMock.clear();
+    });
+
+    it('应该在配置 retries 时进行重试', async () => {
+        // 第一次失败 (500)，第二次成功
+        mockFetch
+            .mockResolvedValueOnce({
+                ok: false,
+                status: 500,
+                statusText: 'Internal Server Error',
+                headers: new Headers({ 'Content-Type': 'application/json' }),
+                json: async () => ({ success: false, message: 'Server Error' }),
+            })
+            .mockResolvedValueOnce({
+                ok: true,
+                headers: new Headers({ 'Content-Type': 'application/json' }),
+                json: async () => ({ success: true, data: { id: '1' } }),
+            });
+
+        const result = await http.get('/test', { retries: 1, retryDelay: 10 });
+
+        expect(mockFetch).toHaveBeenCalledTimes(2);
+        expect(result).toEqual({ id: '1' });
+    });
+
+    it('应该在达到最大重试次数后抛出错误', async () => {
+        // 所有请求都失败
+        mockFetch.mockResolvedValue({
+            ok: false,
+            status: 500,
+            statusText: 'Internal Server Error',
+            headers: new Headers({ 'Content-Type': 'application/json' }),
+            json: async () => ({ success: false, message: 'Server Error' }),
+        });
+
+        await expect(http.get('/test', { retries: 2, retryDelay: 10 }))
+            .rejects.toThrow(HttpError);
+
+        expect(mockFetch).toHaveBeenCalledTimes(3); // 初始 + 2 次重试
+    });
+
+    it('不应该重试 4xx 客户端错误', async () => {
+        mockFetch.mockResolvedValue({
+            ok: false,
+            status: 400,
+            statusText: 'Bad Request',
+            headers: new Headers({ 'Content-Type': 'application/json' }),
+            json: async () => ({ success: false, message: 'Invalid input' }),
+        });
+
+        await expect(http.get('/test', { retries: 2, retryDelay: 10 }))
+            .rejects.toThrow('Invalid input');
+
+        expect(mockFetch).toHaveBeenCalledTimes(1); // 不重试
+    });
+
+    it('应该支持自定义 shouldRetry 函数', async () => {
+        mockFetch
+            .mockResolvedValueOnce({
+                ok: false,
+                status: 400,
+                statusText: 'Bad Request',
+                headers: new Headers({ 'Content-Type': 'application/json' }),
+                json: async () => ({ success: false, message: 'Retry me' }),
+            })
+            .mockResolvedValueOnce({
+                ok: true,
+                headers: new Headers({ 'Content-Type': 'application/json' }),
+                json: async () => ({ success: true, data: 'ok' }),
+            });
+
+        const result = await http.get('/test', {
+            retries: 1,
+            retryDelay: 10,
+            shouldRetry: (error) => error.message === 'Retry me',
+        });
+
+        expect(mockFetch).toHaveBeenCalledTimes(2);
+        expect(result).toBe('ok');
+    });
+});
