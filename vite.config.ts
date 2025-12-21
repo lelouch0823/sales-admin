@@ -1,6 +1,7 @@
 import path from 'path';
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
+import compression from 'vite-plugin-compression';
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, '.', '');
@@ -9,7 +10,15 @@ export default defineConfig(({ mode }) => {
       port: 3000,
       host: '0.0.0.0',
     },
-    plugins: [react()],
+    plugins: [
+      react(),
+      // Gzip 压缩
+      compression({
+        algorithm: 'gzip',
+        ext: '.gz',
+        threshold: 10240, // 10KB 以上才压缩
+      }),
+    ],
     define: {
       'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
       'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
@@ -30,6 +39,7 @@ export default defineConfig(({ mode }) => {
     },
     // 构建优化配置
     build: {
+      target: 'esnext',
       rollupOptions: {
         output: {
           manualChunks: {
@@ -54,11 +64,13 @@ export default defineConfig(({ mode }) => {
             'vendor-i18n': ['i18next', 'react-i18next'],
             // 数据获取
             'vendor-query': ['@tanstack/react-query', '@tanstack/react-table'],
+            // 图标库
+            'vendor-icons': ['lucide-react'],
           },
         },
       },
       // 提高 chunk 警告阈值
-      chunkSizeWarningLimit: 600,
+      chunkSizeWarningLimit: 400,
     },
     // Vitest 配置
     test: {
