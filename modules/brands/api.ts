@@ -36,6 +36,6 @@ export const brandApi = {
    * 批量删除品牌
    */
   batchDelete: async (data: BatchDeleteRequest): Promise<BatchOperationResult> => {
-    return http.delete<BatchOperationResult>('/brands/batch', { data });
+    return http.deleteWithBody<BatchOperationResult>('/brands/batch', data);
   },
 };

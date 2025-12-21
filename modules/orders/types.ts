@@ -118,3 +118,13 @@ export interface BatchUpdateResult {
   updatedCount: number;
   failedCount: number;
 }
+
+/** 订单筛选参数 */
+export interface OrderFilterParams {
+  page?: number;
+  limit?: number;
+  status?: string;
+  search?: string;
+  startDate?: string;
+  endDate?: string;
+}

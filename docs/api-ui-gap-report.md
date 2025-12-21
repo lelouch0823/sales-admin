@@ -241,9 +241,182 @@
 
 ---
 
-## 💡 实现建议
+## 🔧 技术实现细节
 
-1. **复用现有组件库**: 参考 `docs/component-library.md` 中已封装的 UI 组件
-2. **参考现有模块结构**: 以 `modules/pim/` 或 `modules/inventory/` 为模板
-3. **使用 useApiQuery Hook**: 统一数据请求和状态管理
-4. **考虑模块整合**: Brands/Collections/Designers 可作为 PIM 的子模块实现
+### 1. 数据交互与 Mock 策略
+
+- **数据获取**: 统一使用 `hooks/useApiQuery` (封装各类 React Query) 进行数据请求。
+  - 示例: `const { data, isLoading } = useApiQuery('/orders', filterParams);`
+- **Mock 数据现状**:
+  - 当前 `lib/http.ts` 发起真实网络请求，无内置 Mock。
+  - **开发建议**: 若后端不可用，建议在 `lib/api-factory.ts` 临时拦截请求返回 Mock 数据，或引入 MSW (Mock Service Worker)。
+
+### 2. 状态管理规范
+
+- **URL 状态同步**: 筛选条件（如 `page`, `status`, `search`）必须同步到 URL Query 参数，以便分享和刷新。
+  - 推荐工具: `react-router-dom` 的 `useSearchParams`。
+- **本地状态**: 表单、弹窗显隐使用 `useState` 或 `useReducer`。
+
+### 3. 组件复用指南
+
+请优先使用以下 `components/` 下的封装组件：
+
+- **基础 UI**: `components/ui/` (Button, Input, Select, Badge, Card)
+- **交互组件**: `components/primitives/` (Dialog, Sheet/Drawer, Tooltip, Dropdown)
+- **布局组件**: `AnimatedBox` (页面容器), `PageHeader` (标准页头)
+- **表单验证**: 使用 `hooks/useZodForm` 配合 `zod` schema 定义。
+
+### 4. 路由配置
+
+- 所有新页面需在 `router/routes.ts` 中注册，并使用 `React.lazy` 实现按需加载。
+- 权限控制需在 `constants/routes.ts` 中配置 `allowedRoles`。
+
+---
+
+## 📅 实施路线图 (Roadmap)
+
+### Phase 1: 核心业务 UI (High Priority)
+
+1. **Orders (订单模块)**: 开发列表页、详情页及状态流转。
+2. **Analytics (数据分析)**: 对接真实 API，替换 `Dashboard` 的 Mock 数据，实现图表组件。
+
+### Phase 2: PIM 模块整合 (Scheme B)
+
+1. 在 `modules/pim/components` 下建立子目录 (`brands`, `collections`, `designers`)。
+2. 开发对应的列表、编辑组件。
+3. 改造 `PIMView` 引入 Tab 切换结构，统一入口。
+
+### Phase 3: 运营辅助功能 (Low Priority)
+
+1. **Warehouse (仓库)**: 实现仓库树状视图和调货单流程。
+
+---
+
+## 🏗️ 推荐方案：品牌/系列/设计师整合到 PIM
+
+> [!IMPORTANT]
+> **推荐将 Brands、Collections、Designers 三个模块作为 PIM 的子模块实现**，而非独立页面。
+
+### 方案对比
+
+| 方案                     | 描述                    | 优点               | 缺点                    |
+| ------------------------ | ----------------------- | ------------------ | ----------------------- |
+| **A: 保持独立**          | 3 个独立路由入口        | 职责单一           | 路由分散，需 4 个菜单项 |
+| **B: 合并到 PIM** ✅     | 作为 PIM 的 Tab 页      | 单一入口，统一管理 | PIMView 变大（可拆分）  |
+| **C: 新建 Catalog 模块** | 3 个合并为 1 个独立模块 | 中间方案           | 仍需额外路由            |
+
+### 方案 B 详细设计（推荐）
+
+#### 目录结构
+
+```text
+modules/pim/
+├── PIMView.tsx                    # 主视图（带 Tab 切换）
+├── api.ts                         # 商品 API（现有）
+├── types.ts                       # 商品类型（现有）
+├── components/
+│   ├── products/                  # 商品相关组件（现有）
+│   │   ├── ProductRow.tsx
+│   │   ├── ProductEditor.tsx
+│   │   └── ProductFilters.tsx
+│   ├── brands/                    # 品牌 UI 组件（新增）
+│   │   ├── BrandList.tsx
+│   │   ├── BrandForm.tsx
+│   │   └── BrandCard.tsx
+│   ├── collections/               # 系列 UI 组件（新增）
+│   │   ├── CollectionList.tsx
+│   │   ├── CollectionForm.tsx
+│   │   └── CollectionFilter.tsx
+│   └── designers/                 # 设计师 UI 组件（新增）
+│       ├── DesignerList.tsx
+│       ├── DesignerProfile.tsx
+│       └── PortfolioGallery.tsx
+└── submodules/                    # API 层保持独立（复用现有）
+    ├── brands/      → 软链接到 modules/brands/
+    ├── collections/ → 软链接到 modules/collections/
+    └── designers/   → 软链接到 modules/designers/
+```
+
+#### UI 实现方式
+
+```tsx
+// modules/pim/PIMView.tsx
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@radix-ui/react-tabs';
+import { ProductList } from './components/products/ProductList';
+import { BrandList } from './components/brands/BrandList';
+import { CollectionList } from './components/collections/CollectionList';
+import { DesignerList } from './components/designers/DesignerList';
+
+export function PIMView() {
+  return (
+    <Tabs defaultValue="products">
+      <TabsList>
+        <TabsTrigger value="products">商品</TabsTrigger>
+        <TabsTrigger value="brands">品牌</TabsTrigger>
+        <TabsTrigger value="collections">系列</TabsTrigger>
+        <TabsTrigger value="designers">设计师</TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="products">
+        <ProductList />
+      </TabsContent>
+      <TabsContent value="brands">
+        <BrandList />
+      </TabsContent>
+      <TabsContent value="collections">
+        <CollectionList />
+      </TabsContent>
+      <TabsContent value="designers">
+        <DesignerList />
+      </TabsContent>
+    </Tabs>
+  );
+}
+```
+
+#### 为什么推荐方案 B？
+
+1. **符合 PIM 概念**
+   - PIM (Product Information Management) = 产品 + 分类属性
+   - 品牌、系列、设计师都是产品的**属性维度**
+
+2. **用户体验更好**
+   - 单一入口，减少菜单项
+   - 管理员编辑商品时可快速切换查看相关属性
+
+3. **代码复用**
+   - 共享筛选、搜索、批量操作等 UI 逻辑
+   - API 层保持独立，不影响现有代码
+
+4. **路由简化**
+   - 只需 `/pim` 一个路由
+   - 通过 URL 参数或 Tab 状态管理子视图：`/pim?tab=brands`
+
+#### 实施步骤
+
+1. **Phase 1**: 在 `modules/pim/components/` 下创建 `brands/`、`collections/`、`designers/` 子目录
+2. **Phase 2**: 开发 `BrandList.tsx`、`CollectionList.tsx`、`DesignerList.tsx` 列表组件
+3. **Phase 3**: 修改 `PIMView.tsx`，添加 Tabs 组件整合四个子视图
+4. **Phase 4**: 开发编辑表单和详情组件
+5. **Phase 5**: 移除旧的独立模块目录（可选，或保留作为 API 层）
+
+#### 数据模型增强建议
+
+当前 `Product` 类型中 `brand` 是字符串，建议升级为外键关联：
+
+```diff
+// modules/pim/types.ts
+export interface Product {
+  id: string;
+  sku: string;
+  name: string;
+- brand: string;
++ brandId: string;
++ brand?: { id: string; name: string };
++ collectionId?: string;
++ collection?: { id: string; name: string };
++ designerId?: string;
++ designer?: { id: string; name: string };
+  // ...
+}
+```

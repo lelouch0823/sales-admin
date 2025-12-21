@@ -79,7 +79,7 @@ const tokenManager = {
   clearTokens: (): void => {
     localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
     localStorage.removeItem('refresh_token');
-  }
+  },
 };
 
 // ============ 核心请求函数 ============
@@ -87,7 +87,10 @@ const tokenManager = {
 /**
  * 构建完整 URL（包含查询参数）
  */
-function buildUrl(endpoint: string, params?: Record<string, string | number | boolean | undefined>): string {
+function buildUrl(
+  endpoint: string,
+  params?: Record<string, string | number | boolean | undefined>
+): string {
   const url = new URL(endpoint, API_CONFIG.BASE_URL);
 
   if (params) {
@@ -308,7 +311,7 @@ async function tryRefreshToken(): Promise<boolean> {
         return false;
       }
 
-      const result = await response.json() as ApiResponse<{
+      const result = (await response.json()) as ApiResponse<{
         accessToken: string;
         refreshToken: string;
       }>;
@@ -362,6 +365,12 @@ export const http = {
    */
   delete: <T>(endpoint: string, config?: RequestConfig) =>
     request<T>('DELETE', endpoint, undefined, config),
+
+  /**
+   * DELETE 请求 (带 Body)
+   */
+  deleteWithBody: <T>(endpoint: string, data?: unknown, config?: RequestConfig) =>
+    request<T>('DELETE', endpoint, data, config),
 };
 
 // 导出 Token 管理（供 auth 服务使用）
