@@ -21,26 +21,33 @@
 
 基于 `sales-admin` 项目的分析，以下规则适用于该项目：
 
-1.  **构建系统**：使用 **Vite**。开发命令为 `npm run dev`，构建命令为 `npm run build`。
-2.  **测试框架**：使用 **Vitest**。运行测试使用 `npm run test`。
-3.  **语言/框架**：React 19, TypeScript, ESLint, Prettier。
-4.  **样式框架**：使用 **Tailwind CSS**。
-    - 优先使用 Tailwind 的原子类来实现样式。
-    - 遵循项目中 `styles/variables.css` 定义的设计变量（颜色、间距等）。
-    - 对于复杂或可复用的样式模式，考虑使用 `@apply` 指令封装。
-5.  **目录结构规范**：
-    - 公共组件应放在 `components/`。
-    - 业务模块应放在 `modules/`。
-    - 页面视图应放在 `views/`。
-    - 通用钩子应放在 `hooks/`。
-    - 全局样式和 Tailwind 配置相关文件放在 `styles/`。
-6.  **组件库使用**（详见 `docs/component-library.md`）：
-    - UI 组件：`components/ui/` (Button, Input, Select, Textarea)
-    - 原语组件：`components/primitives/` (Dialog, Dropdown, Tooltip)
-    - 动画组件：`components/motion/` (AnimatedBox, AnimatedList)
-    - 图表组件：`components/charts/` (SimpleAreaChart, BarChart, PieChart)
-    - 数据请求：`hooks/useApiQuery` (封装 React Query)
-    - 表单验证：`hooks/useZodForm` (封装 react-hook-form + zod)
+1. **包管理器**：使用 **pnpm**（已从 npm 迁移）。
+2. **构建系统**：使用 **Vite**。开发命令为 `pnpm dev`，构建命令为 `pnpm build`。
+3. **测试框架**：使用 **Vitest**。运行测试使用 `pnpm test`。
+4. **语言/框架**：React 19, TypeScript, ESLint, Prettier。
+5. **样式框架**：使用 **Tailwind CSS**。
+   - 优先使用 Tailwind 的原子类来实现样式。
+   - 遵循项目中 `styles/variables.css` 定义的设计变量（颜色、间距等）。
+   - 对于复杂或可复用的样式模式，考虑使用 `@apply` 指令封装。
+6. **目录结构规范**：
+   - 公共组件应放在 `components/`。
+   - 业务模块应放在 `modules/`。
+   - 页面视图应放在 `views/`。
+   - 通用钩子应放在 `hooks/`。
+   - 全局样式和 Tailwind 配置相关文件放在 `styles/`。
+7. **组件库使用**（详见 `docs/component-library.md`）：
+   - UI 组件：`components/ui/` (Button, Input, Select, Textarea)
+   - 原语组件：`components/primitives/` (Dialog, Dropdown, Tooltip)
+   - 动画组件：`components/motion/` (AnimatedBox, AnimatedList)
+   - 图表组件：`components/charts/` (SimpleAreaChart, BarChart, PieChart)
+   - 数据请求：`hooks/useApiQuery` (封装 React Query)
+   - 表单验证：`hooks/useZodForm` (封装 react-hook-form + zod)
+   - 快捷键：`hooks/useHotkey` (封装 react-hotkeys-hook)
+   - 命令菜单：`lib/command-menu` (封装 cmdk)
+   - 文件上传：`hooks/useFileDrop` (封装 react-dropzone)
+   - Excel 处理：`utils/excel` (封装 xlsx/SheetJS)
+   - 打印功能：`hooks/usePrint` (封装 react-to-print)
+   - 类名合并：`utils/cn` (封装 clsx + tailwind-merge)
 
 ## 行为限制 (Restrictions)
 
@@ -48,7 +55,8 @@
     - 不要手动修改 `node_modules` 目录下的任何文件。
     - 除非明确要求或为了修复配置错误，否则尽量避免大幅修改根目录下的配置文件（如 `.eslintrc.cjs`, `tsconfig.json`）。
 2.  **依赖管理**：
-    - 安装新依赖时，请使用 `npm install`。
+    - 安装新依赖时，请使用 `pnpm add`。
+    - 安装开发依赖使用 `pnpm add -D`。
     - 尽量保持 `package.json` 中的依赖版本一致性。
 
 ## 最佳实践 (Best Practices)
