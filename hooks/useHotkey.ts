@@ -51,7 +51,7 @@ export function useHotkey<T extends HTMLElement = HTMLElement>(
   callback: HotkeyCallback,
   options: HotkeyConfig = {},
   deps: unknown[] = []
-): RefObject<T> {
+): RefObject<T | null> {
   const hotkeyOptions: HotkeyOptions = {
     enableOnFormTags: options.enableOnFormTags,
     enableOnContentEditable: options.enableOnContentEditable,

@@ -1,9 +1,8 @@
-import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { AnimatedList, AnimatedListItem } from '../../components/motion';
-import { DashboardOverview } from '../../modules/analytics/types';
+import { AnimatedList, AnimatedListItem } from '../../../components/motion';
+import { DashboardOverview } from '../types';
 import { DollarSign, ShoppingBag, Users, Package, TrendingUp, TrendingDown } from 'lucide-react';
-import { formatCurrency, formatNumber } from '../../utils/format';
+import { formatCurrency, formatNumber } from '../../../utils/format';
 
 interface MetricsCardsProps {
   overview?: DashboardOverview;

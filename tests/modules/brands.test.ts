@@ -13,6 +13,7 @@ vi.mock('../../lib/http', () => ({
     post: vi.fn(),
     patch: vi.fn(),
     delete: vi.fn(),
+    deleteWithBody: vi.fn(),
   },
   HttpError: class HttpError extends Error {
     constructor(
@@ -137,12 +138,12 @@ describe('brandApi', () => {
   describe('batchDelete', () => {
     it('应该批量删除品牌', async () => {
       const mockResult = { deletedCount: 3, failedCount: 0 };
-      (http.delete as ReturnType<typeof vi.fn>).mockResolvedValueOnce(mockResult);
+      (http.deleteWithBody as ReturnType<typeof vi.fn>).mockResolvedValueOnce(mockResult);
 
       const result = await brandApi.batchDelete({ brandIds: ['brand-1', 'brand-2', 'brand-3'] });
 
-      expect(http.delete).toHaveBeenCalledWith('/brands/batch', {
-        data: { brandIds: ['brand-1', 'brand-2', 'brand-3'] },
+      expect(http.deleteWithBody).toHaveBeenCalledWith('/brands/batch', {
+        brandIds: ['brand-1', 'brand-2', 'brand-3'],
       });
       expect(result.deletedCount).toBe(3);
     });

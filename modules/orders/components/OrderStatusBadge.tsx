@@ -1,4 +1,3 @@
-import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Badge } from '../../../components/common/Badge';
 import { OrderStatus } from '../types';
@@ -15,19 +14,15 @@ export function OrderStatusBadge({ status }: OrderStatusBadgeProps) {
       case 'pending':
         return 'warning';
       case 'confirmed':
-        return 'info';
       case 'processing':
-        return 'info';
       case 'shipped':
-        return 'primary';
+        return 'neutral';
       case 'delivered':
         return 'success';
       case 'cancelled':
-        return 'error';
       case 'refunded':
-        return 'error';
       case 'failed':
-        return 'error';
+        return 'danger';
       case 'returned':
         return 'warning';
       default:

@@ -1,4 +1,3 @@
-import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Search } from 'lucide-react';
 import { Input } from '../../../components/ui/Input';
@@ -39,7 +38,7 @@ export function OrderFilters({ onSearchChange, onStatusChange, currentStatus }: 
         <Select
           options={statusOptions}
           value={currentStatus}
-          onChange={value => onStatusChange(value as OrderStatus | 'all')}
+          onChange={e => onStatusChange(e.target.value as OrderStatus | 'all')}
         />
       </div>
     </div>

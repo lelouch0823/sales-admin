@@ -31,6 +31,12 @@ const AuditLogView = React.lazy(() =>
 const OrdersView = React.lazy(() =>
   import('../modules/orders/OrdersView').then(m => ({ default: m.OrdersView }))
 );
+const AnalyticsView = React.lazy(() =>
+  import('../modules/analytics/AnalyticsView').then(m => ({ default: m.AnalyticsView }))
+);
+const WarehouseView = React.lazy(() =>
+  import('../modules/warehouse/WarehouseView').then(m => ({ default: m.WarehouseView }))
+);
 
 /**
  * 路由配置类型
@@ -107,6 +113,18 @@ export const routes: Route[] = [
     id: ROUTES.ORDERS,
     component: OrdersView,
     allowedRoles: ['SUPER_ADMIN', 'OPS_GLOBAL', 'STORE_MANAGER', 'STORE_STAFF'],
+    requiresAuth: true,
+  },
+  {
+    id: ROUTES.ANALYTICS,
+    component: AnalyticsView,
+    allowedRoles: ['SUPER_ADMIN', 'OPS_GLOBAL'],
+    requiresAuth: true,
+  },
+  {
+    id: ROUTES.WAREHOUSE,
+    component: WarehouseView,
+    allowedRoles: ['SUPER_ADMIN', 'OPS_GLOBAL', 'STORE_MANAGER'],
     requiresAuth: true,
   },
 ];

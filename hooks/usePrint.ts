@@ -4,12 +4,12 @@
  * 使用 react-to-print 实现页面内容打印
  */
 
-import { useRef, useCallback } from 'react';
+import { useRef } from 'react';
 import { useReactToPrint } from 'react-to-print';
 
 interface UsePrintOptions {
   documentTitle?: string;
-  onBeforePrint?: () => Promise<void> | void;
+  onBeforePrint?: () => Promise<void>;
   onAfterPrint?: () => void;
 }
 
@@ -20,10 +20,6 @@ interface UsePrintOptions {
  */
 export function usePrint<T extends HTMLElement = HTMLDivElement>(options: UsePrintOptions = {}) {
   const printRef = useRef<T>(null);
-
-  const reactToPrintContent = useCallback(() => {
-    return printRef.current;
-  }, []);
 
   const handlePrint = useReactToPrint({
     contentRef: printRef,

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useApiQuery } from '../../../hooks/useApiQuery';
 import { orderApi } from '../api';
