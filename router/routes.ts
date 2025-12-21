@@ -7,13 +7,13 @@ import { ROUTES, RouteId } from '../constants/routes';
 import { RoleId } from '../constants/roles';
 
 // 视图组件懒加载导入
-import { PIMView } from '../modules/pim/PIMView';
-import { InventoryView } from '../modules/inventory/InventoryView';
-import { CustomersView } from '../modules/crm/CustomersView';
-import { RecommendationsView } from '../modules/recommendations/RecommendationsView';
-import { DashboardView } from '../views/Dashboard';
-import { UsersView } from '../views/Users';
-import { AuditLogView } from '../views/AuditLog';
+const PIMView = React.lazy(() => import('../modules/pim/PIMView').then(m => ({ default: m.PIMView })));
+const InventoryView = React.lazy(() => import('../modules/inventory/InventoryView').then(m => ({ default: m.InventoryView })));
+const CustomersView = React.lazy(() => import('../modules/crm/CustomersView').then(m => ({ default: m.CustomersView })));
+const RecommendationsView = React.lazy(() => import('../modules/recommendations/RecommendationsView').then(m => ({ default: m.RecommendationsView })));
+const DashboardView = React.lazy(() => import('../views/Dashboard').then(m => ({ default: m.DashboardView })));
+const UsersView = React.lazy(() => import('../views/Users').then(m => ({ default: m.UsersView })));
+const AuditLogView = React.lazy(() => import('../views/AuditLog').then(m => ({ default: m.AuditLogView })));
 
 /**
  * 路由配置类型

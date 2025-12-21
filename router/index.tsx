@@ -16,6 +16,11 @@ interface RouterProps {
  * 路由渲染组件
  * 根据配置自动渲染组件和权限包装
  */
+import { Suspense } from 'react';
+import { FullPageSpinner } from '../components/common/Spinner';
+
+// ... existing imports
+
 export const RouterView: React.FC<RouterProps> = ({ currentView, onBack }) => {
     const route = getRouteById(currentView);
 
@@ -26,17 +31,23 @@ export const RouterView: React.FC<RouterProps> = ({ currentView, onBack }) => {
     const Component = route.component;
     const props = route.props || {};
 
+    const content = (
+        <Suspense fallback={<FullPageSpinner label="加载模块中..." />}>
+            <Component {...props} />
+        </Suspense>
+    );
+
     // 如果路由需要权限控制
     if (route.allowedRoles && route.allowedRoles.length > 0) {
         return (
             <ProtectedView allowedRoles={route.allowedRoles} onBack={onBack}>
-                <Component {...props} />
+                {content}
             </ProtectedView>
         );
     }
 
     // 无权限限制，直接渲染
-    return <Component {...props} />;
+    return content;
 };
 
 export { routes, getRouteById, canAccessRoute };

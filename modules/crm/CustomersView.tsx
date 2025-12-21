@@ -1,17 +1,16 @@
 import React, { useState } from 'react';
-import { Search, Filter, CheckSquare, Square, UserCheck, Calendar } from 'lucide-react';
+import { Search, Filter, CheckSquare, Square, UserCheck } from 'lucide-react';
 import { useApp } from '../../lib/context';
 import { useToast } from '../../lib/toast';
 import { Card } from '../../components/common/Card';
-import { Badge } from '../../components/common/Badge';
 import { EmptyState } from '../../components/common/EmptyState';
 import { Customer } from './types';
 import { CustomerDetailPanel } from './components/CustomerDetailPanel';
+import { CustomerRow } from './components/CustomerRow';
 import { BatchAssignModal } from './components/BatchAssignModal';
 import { useTranslation } from 'react-i18next';
 import { AnimatedBox } from '../../components/motion';
 import { Tooltip, TooltipProvider } from '../../components/primitives';
-import { dateUtils } from '../../utils';
 
 /**
  * 客户管理视图 (CustomersView)
@@ -105,14 +104,7 @@ export const CustomersView: React.FC = () => {
     }
   }
 
-  // 格式化辅助: 检查是否逾期
-  const isOverdue = (dateStr?: string) => {
-    if (!dateStr) return false;
-    // 使用 dateUtils 或原生 Date 比较 (这里逻辑简单，直接比较)
-    // 但为了演示 dateUtils 集成，我们可以用 dateUtils.parseDate
-    // 不过 dateUtils 目前主要是 formatter。这里保持简单比较即可，或者扩展 dateUtils
-    return new Date(dateStr) < new Date(new Date().setHours(0, 0, 0, 0));
-  };
+
 
   return (
     <TooltipProvider>
@@ -126,8 +118,8 @@ export const CustomersView: React.FC = () => {
                 key={t}
                 onClick={() => { setTab(t as any); setSelectedIds(new Set()); }}
                 className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all ${tab === t
-                    ? 'bg-white text-primary shadow-sm'
-                    : 'text-gray-500 hover:text-gray-700'
+                  ? 'bg-white text-primary shadow-sm'
+                  : 'text-gray-500 hover:text-gray-700'
                   }`}
               >
                 {getTabLabel(t)}
@@ -205,74 +197,16 @@ export const CustomersView: React.FC = () => {
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {filteredCustomers.map(customer => (
-                    <tr
+                    <CustomerRow
                       key={customer.id}
-                      className={`group hover:bg-gray-50/40 cursor-pointer ${selectedIds.has(customer.id) ? 'bg-brand-light/30' : ''}`}
-                      onClick={() => { setSelectedCustomer(customer); }}
-                    >
-                      <td className="py-4 px-6" onClick={(e) => e.stopPropagation()}>
-                        <button onClick={() => toggleSelection(customer.id)} className={`text-gray-400 hover:text-gray-600 ${selectedIds.has(customer.id) ? 'text-brand' : ''}`}>
-                          {selectedIds.has(customer.id) ? <CheckSquare size={16} /> : <Square size={16} />}
-                        </button>
-                      </td>
-                      <td className="py-4 px-6">
-                        <div className="font-medium text-primary">{customer.name}</div>
-                        <div className="text-xs text-gray-500 font-mono">{customer.phone}</div>
-                      </td>
-                      <td className="py-4 px-6">
-                        <div className="flex gap-1 flex-wrap">
-                          {customer.tags.map(tag => (
-                            <span key={tag} className="inline-flex px-2 py-0.5 rounded text-[10px] bg-gray-100 text-gray-600">
-                              {tag}
-                            </span>
-                          ))}
-                        </div>
-                      </td>
-                      <td className="py-4 px-6">
-                        {!customer.ownerUserId ? (
-                          <Badge variant="neutral">{t('crm.badges.pool')}</Badge>
-                        ) : customer.ownerUserId === currentUser.id ? (
-                          <Badge variant="success">{t('crm.badges.mine')}</Badge>
-                        ) : (
-                          <Badge variant="warning">{t('crm.badges.shared')}</Badge>
-                        )}
-                      </td>
-                      <td className="py-4 px-6">
-                        {customer.nextFollowUp ? (
-                          <div className={`flex items-center gap-1.5 text-xs font-medium ${isOverdue(customer.nextFollowUp) ? 'text-red-600' : 'text-gray-600'}`}>
-                            <Calendar size={14} className={isOverdue(customer.nextFollowUp) ? 'text-red-500' : 'text-gray-400'} />
-                            {dateUtils.formatSmart(customer.nextFollowUp)}
-                          </div>
-                        ) : (
-                          <span className="text-xs text-gray-400">-</span>
-                        )}
-                      </td>
-                      <td className="py-4 px-6 text-right" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex items-center justify-end gap-2">
-                          {!customer.ownerUserId && (
-                            <Tooltip content={t('crm.actions.claim')}>
-                              <button
-                                onClick={() => { claimCustomer(customer.id, currentUser.id); toast.success(t('alerts.crm.claim_success')); }}
-                                className="text-xs bg-brand text-white px-3 py-1.5 rounded hover:bg-brand-hover transition-colors font-medium shadow-sm"
-                              >
-                                {t('crm.actions.claim')}
-                              </button>
-                            </Tooltip>
-                          )}
-
-                          {customer.ownerUserId === currentUser.id && (
-                            <Tooltip content={t('crm.actions.return_pool')}>
-                              <button
-                                onClick={() => releaseCustomer(customer.id)}
-                                className="text-xs text-danger-text hover:bg-danger-light px-3 py-1.5 rounded border border-transparent hover:border-danger-border transition-colors"
-                              >
-                                {t('crm.actions.return_pool')}
-                              </button>
-                            </Tooltip>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
+                      customer={customer}
+                      currentUser={currentUser}
+                      isSelected={selectedIds.has(customer.id)}
+                      onToggleSelection={toggleSelection}
+                      onSelectCustomer={setSelectedCustomer}
+                      onClaim={claimCustomer}
+                      onRelease={releaseCustomer}
+                    />
                   ))}
                   {filteredCustomers.length === 0 && (
                     <tr>

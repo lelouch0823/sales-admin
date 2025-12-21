@@ -1,14 +1,14 @@
 import React, { useState, useMemo } from 'react';
-import { Search, Plus, UploadCloud, Edit3, CheckSquare, Square, Trash2, ArrowUpCircle, XCircle, Filter } from 'lucide-react';
+import { Search, Plus, UploadCloud, CheckSquare, Square, Trash2, ArrowUpCircle, XCircle, Filter } from 'lucide-react';
 import { useApp } from '../../lib/context';
 import { useToast } from '../../lib/toast';
 import { Card } from '../../components/common/Card';
-import { Badge } from '../../components/common/Badge';
 import { EmptyState } from '../../components/common/EmptyState';
 import { Modal } from '../../components/common/Modal';
 import { Product, ProductStatus } from './types';
 import { ProductEditor } from './components/ProductEditor';
 import { ProductFilters } from './components/ProductFilters';
+import { ProductRow } from './components/ProductRow';
 import { useTranslation } from 'react-i18next';
 import { AnimatedBox } from '../../components/motion';
 import { Tooltip, TooltipProvider } from '../../components/primitives';
@@ -225,37 +225,13 @@ export const PIMView: React.FC = () => {
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {filteredProducts.map(p => (
-                    <tr key={p.id} className={`hover:bg-gray-50/40 ${selectedIds.has(p.id) ? 'bg-brand-light/30' : ''}`}>
-                      <td className="py-4 px-6">
-                        <button onClick={() => toggleSelection(p.id)} className={`text-gray-400 hover:text-gray-600 ${selectedIds.has(p.id) ? 'text-brand' : ''}`}>
-                          {selectedIds.has(p.id) ? <CheckSquare size={16} /> : <Square size={16} />}
-                        </button>
-                      </td>
-                      <td className="py-4 px-6">
-                        <div className="w-10 h-10 rounded bg-gray-100">
-                          <img src={p.imageUrl} className="w-full h-full object-cover rounded" />
-                        </div>
-                      </td>
-                      <td className="py-4 px-6">
-                        <div className="font-medium text-primary text-sm">{p.name}</div>
-                        <div className="text-xs text-gray-500 font-mono">{p.sku}</div>
-                      </td>
-                      <td className="py-4 px-6 text-sm text-gray-600">{p.category}</td>
-                      <td className="py-4 px-6">
-                        <Badge variant={p.status === 'PUBLISHED' ? 'success' : p.status === 'DRAFT' ? 'warning' : 'neutral'}>
-                          {t(`consts.status.${p.status}`)}
-                        </Badge>
-                      </td>
-                      <td className="py-4 px-6 text-xs space-y-1">
-                        <div className={p.allowBackorder ? 'text-success-text' : 'text-gray-400'}>{t('pim.table.backorder')}: {p.allowBackorder ? t('common.yes') : t('common.no')}</div>
-                        <div className={p.allowTransfer ? 'text-brand' : 'text-gray-400'}>{t('pim.table.transfer')}: {p.allowTransfer ? t('common.yes') : t('common.no')}</div>
-                      </td>
-                      <td className="py-4 px-6 text-right">
-                        <Tooltip content={t('common.edit')}>
-                          <button onClick={() => handleEdit(p)} className="text-gray-400 hover:text-brand"><Edit3 size={16} /></button>
-                        </Tooltip>
-                      </td>
-                    </tr>
+                    <ProductRow
+                      key={p.id}
+                      product={p}
+                      isSelected={selectedIds.has(p.id)}
+                      onToggleSelection={toggleSelection}
+                      onEdit={handleEdit}
+                    />
                   ))}
                   {filteredProducts.length === 0 && (
                     <tr>
