@@ -6,6 +6,7 @@ import { Collection } from '../../../collections/types';
 import { AnimatedBox } from '../../../../components/motion';
 import { Button } from '../../../../components/ui/Button';
 import { Input } from '../../../../components/ui/Input';
+import { ConfirmDialog } from '../../../../components/common/ConfirmDialog';
 import { Plus, Search, Edit, Trash2 } from 'lucide-react';
 import { formatDate } from '../../../../utils/date';
 
@@ -17,6 +18,7 @@ interface CollectionListProps {
 export function CollectionList({ onEdit, onCreate }: CollectionListProps) {
   const { t } = useTranslation();
   const [search, setSearch] = useState('');
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const {
     data: collections,
@@ -27,14 +29,15 @@ export function CollectionList({ onEdit, onCreate }: CollectionListProps) {
     queryFn: () => collectionApi.list(),
   });
 
-  const handleDelete = async (id: string) => {
-    if (confirm(t('confirmDelete'))) {
-      try {
-        await collectionApi.delete(id);
-        refetch();
-      } catch (error) {
-        console.error('Failed to delete collection', error);
-      }
+  const handleDelete = async () => {
+    if (!deleteId) return;
+    try {
+      await collectionApi.delete(deleteId);
+      refetch();
+    } catch (error) {
+      console.error('Failed to delete collection', error);
+    } finally {
+      setDeleteId(null);
     }
   };
 
@@ -115,7 +118,7 @@ export function CollectionList({ onEdit, onCreate }: CollectionListProps) {
                     <Edit size={16} />
                   </button>
                   <button
-                    onClick={() => handleDelete(collection.id)}
+                    onClick={() => setDeleteId(collection.id)}
                     className="text-red-600 hover:text-red-900"
                   >
                     <Trash2 size={16} />
@@ -133,6 +136,16 @@ export function CollectionList({ onEdit, onCreate }: CollectionListProps) {
           </tbody>
         </table>
       </div>
+
+      <ConfirmDialog
+        open={!!deleteId}
+        onOpenChange={open => !open && setDeleteId(null)}
+        title={t('confirmDelete')}
+        description={t('deleteConfirmMessage')}
+        variant="danger"
+        confirmText={t('delete')}
+        onConfirm={handleDelete}
+      />
     </AnimatedBox>
   );
 }

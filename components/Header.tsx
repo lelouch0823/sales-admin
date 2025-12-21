@@ -1,7 +1,10 @@
-import React from 'react';
-import { Bell, Menu, Globe, RotateCcw } from 'lucide-react';
+import { useState } from 'react';
+import { Menu, Globe, RotateCcw } from 'lucide-react';
 import { useApp } from '../lib/context';
 import { useTranslation } from 'react-i18next';
+import { NotificationPanel } from './common/NotificationPanel';
+import { ConfirmDialog } from './common/ConfirmDialog';
+import { Avatar } from './ui/Avatar';
 
 interface HeaderProps {
   onMenuClick: () => void; // 移动端菜单点击回调
@@ -18,6 +21,7 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({ onMenuClick, onOpenCommand }) => {
   const { currentUser, resetDemoData } = useApp();
   const { t, i18n } = useTranslation();
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   // 语言切换逻辑
   const toggleLanguage = () => {
@@ -64,7 +68,7 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick, onOpenCommand }) =>
         {/* 重置数据按钮 (仅限超级管理员，用于演示环境) */}
         {currentUser.role === 'SUPER_ADMIN' && (
           <button
-            onClick={() => { if (confirm('Reset all demo data?')) resetDemoData(); }}
+            onClick={() => setShowResetConfirm(true)}
             className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
             title="Reset Demo Data"
           >
@@ -81,11 +85,8 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick, onOpenCommand }) =>
           {i18n.language === 'en' ? 'EN' : '中文'}
         </button>
 
-        {/* 通知中心 (Mock) */}
-        <button className="p-2 text-gray-500 hover:bg-gray-100 rounded-full transition-colors relative">
-          <Bell size={20} />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-danger rounded-full border border-white"></span>
-        </button>
+        {/* 通知中心 */}
+        <NotificationPanel />
 
         {/* 用户信息卡片 */}
         <div className="flex items-center gap-3 pl-2 border-l border-gray-200">
@@ -94,14 +95,26 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick, onOpenCommand }) =>
             <div className="text-xs text-gray-500">{currentUser.role}</div>
           </div>
           <button className="relative">
-            <img
+            <Avatar
               src={currentUser.avatarUrl}
-              alt="Profile"
-              className="w-9 h-9 rounded-full border border-gray-200 object-cover shadow-sm"
+              name={currentUser.name}
+              size="md"
+              className="border border-gray-200 shadow-sm"
             />
           </button>
         </div>
       </div>
+
+      {/* 重置确认对话框 */}
+      <ConfirmDialog
+        open={showResetConfirm}
+        onOpenChange={setShowResetConfirm}
+        title="重置演示数据"
+        description="此操作将重置所有演示数据到初始状态，确定继续吗？"
+        variant="danger"
+        confirmText="重置"
+        onConfirm={resetDemoData}
+      />
     </header>
   );
 };

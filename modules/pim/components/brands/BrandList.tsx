@@ -3,9 +3,10 @@ import { useTranslation } from 'react-i18next';
 import { useApiQuery } from '../../../../hooks/useApiQuery';
 import { brandApi } from '../../../brands/api';
 import { Brand } from '../../../brands/types';
-import { AnimatedBox } from '../../../../components/motion'; // Import from folder index
+import { AnimatedBox } from '../../../../components/motion';
 import { Button } from '../../../../components/ui/Button';
 import { Input } from '../../../../components/ui/Input';
+import { ConfirmDialog } from '../../../../components/common/ConfirmDialog';
 import { Plus, Search, Edit, Trash2 } from 'lucide-react';
 import { formatDate } from '../../../../utils/date';
 
@@ -17,6 +18,7 @@ interface BrandListProps {
 export function BrandList({ onEdit, onCreate }: BrandListProps) {
   const { t } = useTranslation();
   const [search, setSearch] = useState('');
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const {
     data: brands,
@@ -27,14 +29,15 @@ export function BrandList({ onEdit, onCreate }: BrandListProps) {
     queryFn: () => brandApi.list(),
   });
 
-  const handleDelete = async (id: string) => {
-    if (confirm(t('confirmDelete'))) {
-      try {
-        await brandApi.delete(id);
-        refetch();
-      } catch (error) {
-        console.error('Failed to delete brand', error);
-      }
+  const handleDelete = async () => {
+    if (!deleteId) return;
+    try {
+      await brandApi.delete(deleteId);
+      refetch();
+    } catch (error) {
+      console.error('Failed to delete brand', error);
+    } finally {
+      setDeleteId(null);
     }
   };
 
@@ -145,7 +148,7 @@ export function BrandList({ onEdit, onCreate }: BrandListProps) {
                     <Edit size={16} />
                   </button>
                   <button
-                    onClick={() => handleDelete(brand.id)}
+                    onClick={() => setDeleteId(brand.id)}
                     className="text-red-600 hover:text-red-900"
                   >
                     <Trash2 size={16} />
@@ -163,6 +166,16 @@ export function BrandList({ onEdit, onCreate }: BrandListProps) {
           </tbody>
         </table>
       </div>
+
+      <ConfirmDialog
+        open={!!deleteId}
+        onOpenChange={open => !open && setDeleteId(null)}
+        title={t('confirmDelete')}
+        description={t('deleteConfirmMessage')}
+        variant="danger"
+        confirmText={t('delete')}
+        onConfirm={handleDelete}
+      />
     </AnimatedBox>
   );
 }

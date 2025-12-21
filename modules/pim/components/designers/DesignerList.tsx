@@ -6,6 +6,8 @@ import { Designer } from '../../../designers/types';
 import { AnimatedBox } from '../../../../components/motion';
 import { Button } from '../../../../components/ui/Button';
 import { Input } from '../../../../components/ui/Input';
+import { Avatar } from '../../../../components/ui/Avatar';
+import { ConfirmDialog } from '../../../../components/common/ConfirmDialog';
 import { Plus, Search, Edit, Trash2 } from 'lucide-react';
 import { formatDate } from '../../../../utils/date';
 
@@ -17,6 +19,7 @@ interface DesignerListProps {
 export function DesignerList({ onEdit, onCreate }: DesignerListProps) {
   const { t } = useTranslation();
   const [search, setSearch] = useState('');
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const {
     data: designers,
@@ -27,14 +30,15 @@ export function DesignerList({ onEdit, onCreate }: DesignerListProps) {
     queryFn: () => designerApi.list(),
   });
 
-  const handleDelete = async (id: string) => {
-    if (confirm(t('confirmDelete'))) {
-      try {
-        await designerApi.delete(id);
-        refetch();
-      } catch (error) {
-        console.error('Failed to delete designer', error);
-      }
+  const handleDelete = async () => {
+    if (!deleteId) return;
+    try {
+      await designerApi.delete(deleteId);
+      refetch();
+    } catch (error) {
+      console.error('Failed to delete designer', error);
+    } finally {
+      setDeleteId(null);
     }
   };
 
@@ -89,11 +93,7 @@ export function DesignerList({ onEdit, onCreate }: DesignerListProps) {
               <tr key={designer.id} className="hover:bg-gray-50 transition-colors">
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
-                    <div className="h-10 w-10 flex-shrink-0">
-                      <div className="h-10 w-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 font-bold">
-                        {designer.name.charAt(0)}
-                      </div>
-                    </div>
+                    <Avatar name={designer.name} size="md" />
                     <div className="ml-4">
                       <div className="text-sm font-medium text-gray-900">{designer.name}</div>
                       <div className="text-xs text-gray-500">{designer.email}</div>
@@ -122,7 +122,7 @@ export function DesignerList({ onEdit, onCreate }: DesignerListProps) {
                     <Edit size={16} />
                   </button>
                   <button
-                    onClick={() => handleDelete(designer.id)}
+                    onClick={() => setDeleteId(designer.id)}
                     className="text-red-600 hover:text-red-900"
                   >
                     <Trash2 size={16} />
@@ -140,6 +140,16 @@ export function DesignerList({ onEdit, onCreate }: DesignerListProps) {
           </tbody>
         </table>
       </div>
+
+      <ConfirmDialog
+        open={!!deleteId}
+        onOpenChange={open => !open && setDeleteId(null)}
+        title={t('confirmDelete')}
+        description={t('deleteConfirmMessage')}
+        variant="danger"
+        confirmText={t('delete')}
+        onConfirm={handleDelete}
+      />
     </AnimatedBox>
   );
 }
