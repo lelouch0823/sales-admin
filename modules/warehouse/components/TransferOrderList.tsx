@@ -1,10 +1,13 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useApiQuery } from '../../../hooks/useApiQuery';
 import { transferOrderApi } from '../api';
 import { TransferOrder, TransferOrderStatus } from '../types';
 import { AnimatedBox } from '../../../components/motion';
 import { Button } from '../../../components/ui/Button';
+import { Select } from '../../../components/ui/Select';
+import { DataTable, Column } from '../../../components/common/DataTable';
+import { Badge } from '../../../components/common/Badge';
 import { Plus, ArrowRight } from 'lucide-react';
 import { formatDate } from '../../../utils/date';
 
@@ -14,6 +17,14 @@ interface TransferOrderListProps {
   onView: (order: TransferOrder) => void;
 }
 
+/**
+ * 调货单列表组件
+ *
+ * 优化点：
+ * - 使用 DataTable 自动骨架屏和空状态
+ * - 使用 Badge 显示状态
+ * - 使用 Select 组件替代原生 select
+ */
 export function TransferOrderList({ warehouseId, onCreate, onView }: TransferOrderListProps) {
   const { t } = useTranslation();
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -23,32 +34,94 @@ export function TransferOrderList({ warehouseId, onCreate, onView }: TransferOrd
     queryFn: () =>
       transferOrderApi.list({
         sourceWarehouseId: warehouseId,
-        // If viewing specific warehouse, show orders FROM or TO it?
-        // For simplicity, let's assume this list shows orders originating from the selected warehouse
-        // In a real app, you might want a toggle "Inbound / Outbound"
         status: statusFilter !== 'all' ? statusFilter : undefined,
       }),
     enabled: !!warehouseId,
   });
 
-  const getStatusBadge = (status: TransferOrderStatus) => {
-    const colors: Record<TransferOrderStatus, string> = {
-      draft: 'bg-gray-100 text-gray-800',
-      pending: 'bg-yellow-100 text-yellow-800',
-      approved: 'bg-blue-100 text-blue-800',
-      shipped: 'bg-purple-100 text-purple-800',
-      received: 'bg-green-100 text-green-800',
-      cancelled: 'bg-red-100 text-red-800',
+  // 状态颜色映射
+  const getStatusVariant = (
+    status: TransferOrderStatus
+  ): 'success' | 'warning' | 'danger' | 'neutral' | 'default' => {
+    const variants: Record<
+      TransferOrderStatus,
+      'success' | 'warning' | 'danger' | 'neutral' | 'default'
+    > = {
+      draft: 'neutral',
+      pending: 'warning',
+      approved: 'default',
+      shipped: 'default',
+      received: 'success',
+      cancelled: 'danger',
     };
-    return (
-      <span
-        className={`px-2 py-0.5 rounded-full text-xs font-semibold ${colors[status] || 'bg-gray-100'}`}
-      >
-        {t(`status.${status}`)}
-      </span>
-    );
+    return variants[status] || 'neutral';
   };
 
+  // 状态筛选选项
+  const statusOptions = useMemo(
+    () => [
+      { value: 'all', label: t('common.all_status') },
+      { value: 'pending', label: t('status.pending') },
+      { value: 'approved', label: t('status.approved') },
+      { value: 'shipped', label: t('status.shipped') },
+    ],
+    [t]
+  );
+
+  // 表格列定义
+  const columns: Column<TransferOrder>[] = useMemo(
+    () => [
+      {
+        key: 'orderNumber',
+        header: t('orderNumber'),
+        sortable: true,
+        render: (_, order) => (
+          <span className="font-medium text-gray-900">
+            {order.orderNumber || order.id.substr(0, 8)}
+          </span>
+        ),
+      },
+      {
+        key: 'route',
+        header: t('route'),
+        render: (_, order) => (
+          <div className="flex items-center gap-2 text-gray-600">
+            <span>{order.sourceWarehouse.name}</span>
+            <ArrowRight size={14} className="text-gray-400" />
+            <span>{order.targetWarehouse.name}</span>
+          </div>
+        ),
+      },
+      {
+        key: 'items',
+        header: t('items'),
+        align: 'center',
+        render: (_, order) => (
+          <span className="text-gray-600">
+            {order.items.length} {t('common.items')}
+          </span>
+        ),
+      },
+      {
+        key: 'status',
+        header: t('status'),
+        render: (_, order) => (
+          <Badge variant={getStatusVariant(order.status)}>{t(`status.${order.status}`)}</Badge>
+        ),
+      },
+      {
+        key: 'createdAt',
+        header: t('date'),
+        sortable: true,
+        render: (_, order) => (
+          <span className="text-gray-500">{formatDate(order.createdAt || '')}</span>
+        ),
+      },
+    ],
+    [t]
+  );
+
+  // 未选择仓库时的占位
   if (!warehouseId) {
     return (
       <div className="flex-1 flex items-center justify-center text-gray-400 bg-gray-50 h-full rounded-lg border-2 border-dashed mx-6 my-6">
@@ -58,21 +131,18 @@ export function TransferOrderList({ warehouseId, onCreate, onView }: TransferOrd
   }
 
   return (
-    <AnimatedBox className="flex-1 flex flex-col bg-white overflow-hidden">
-      {/* Toolbar */}
+    <AnimatedBox className="flex-1 flex flex-col bg-white overflow-hidden rounded-lg border border-gray-100">
+      {/* 工具栏 */}
       <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-white">
         <h2 className="text-lg font-bold text-gray-900">{t('warehouse.transfer_orders')}</h2>
-        <div className="flex gap-2">
-          <select
-            className="text-sm border-gray-200 rounded-md focus:ring-blue-500 focus:border-blue-500"
+        <div className="flex gap-2 items-center">
+          <Select
+            options={statusOptions}
             value={statusFilter}
             onChange={e => setStatusFilter(e.target.value)}
-          >
-            <option value="all">{t('common.all_status')}</option>
-            <option value="pending">{t('status.pending')}</option>
-            <option value="approved">{t('status.approved')}</option>
-            <option value="shipped">{t('status.shipped')}</option>
-          </select>
+            fullWidth={false}
+            className="w-40"
+          />
           <Button size="sm" onClick={onCreate}>
             <Plus size={16} className="mr-1" />
             {t('warehouse.new_transfer')}
@@ -80,67 +150,16 @@ export function TransferOrderList({ warehouseId, onCreate, onView }: TransferOrd
         </div>
       </div>
 
-      {/* List */}
+      {/* 数据表格 */}
       <div className="flex-1 overflow-auto">
-        {isLoading ? (
-          <div className="p-8 text-center text-gray-400">Loading transfers...</div>
-        ) : (
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-100 sticky top-0">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  {t('orderNumber')}
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  {t('route')}
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  {t('items')}
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  {t('status')}
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  {t('date')}
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {transferOrders?.map(order => (
-                <tr
-                  key={order.id}
-                  className="hover:bg-gray-50 cursor-pointer transition-colors"
-                  onClick={() => onView(order)}
-                >
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {order.orderNumber || order.id.substr(0, 8)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                    <div className="flex items-center gap-2">
-                      <span>{order.sourceWarehouse.name}</span>
-                      <ArrowRight size={14} className="text-gray-400" />
-                      <span>{order.targetWarehouse.name}</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                    {order.items.length} {t('common.items')}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">{getStatusBadge(order.status)}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {formatDate(order.createdAt || '')}
-                  </td>
-                </tr>
-              ))}
-              {(!transferOrders || transferOrders.length === 0) && (
-                <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
-                    {t('noData')}
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        )}
+        <DataTable
+          columns={columns}
+          data={transferOrders || []}
+          rowKey="id"
+          loading={isLoading}
+          emptyText={t('noData')}
+          onRowClick={onView}
+        />
       </div>
     </AnimatedBox>
   );

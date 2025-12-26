@@ -11,6 +11,7 @@ import { OrderStatusBadge } from './OrderStatusBadge';
 import { formatCurrency } from '../../../utils/format';
 import { formatDate } from '../../../utils/date';
 import { ArrowLeft, Printer, Box, XCircle, CheckCircle, Truck } from 'lucide-react';
+import { Skeleton, CardSkeleton } from '../../../components/common/Skeleton';
 
 interface OrderDetailProps {
   id: string;
@@ -58,7 +59,27 @@ export function OrderDetail({ id, onBack }: OrderDetailProps) {
   };
 
   if (isLoading) {
-    return <div className="p-8 text-center">Loading...</div>;
+    return (
+      <div className="max-w-7xl mx-auto p-4 md:p-8 space-y-6">
+        <div className="flex items-center gap-4 mb-6">
+          <Skeleton variant="circular" width={40} height={40} />
+          <div className="flex-1">
+            <Skeleton className="h-8 w-48 mb-2" />
+            <Skeleton className="h-4 w-32" />
+          </div>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-6">
+            <CardSkeleton />
+            <CardSkeleton />
+          </div>
+          <div className="space-y-6">
+            <CardSkeleton />
+            <CardSkeleton />
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (!order) {
@@ -121,7 +142,7 @@ export function OrderDetail({ id, onBack }: OrderDetailProps) {
           {/* Items */}
           <section className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
             <h2 className="text-lg font-semibold mb-4">{t('orderItems')}</h2>
-            {items ? <OrderItemList items={items} /> : <p>Loading items...</p>}
+            {items ? <OrderItemList items={items} /> : <Skeleton lines={3} />}
 
             <div className="mt-6 flex justify-end border-t pt-4">
               <div className="text-right space-y-2">
@@ -140,7 +161,7 @@ export function OrderDetail({ id, onBack }: OrderDetailProps) {
           {/* Timeline */}
           <section className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
             <h2 className="text-lg font-semibold mb-6">{t('orderHistory')}</h2>
-            {logs ? <OrderTimeline logs={logs} /> : <p>Loading history...</p>}
+            {logs ? <OrderTimeline logs={logs} /> : <Skeleton lines={4} />}
           </section>
         </div>
 

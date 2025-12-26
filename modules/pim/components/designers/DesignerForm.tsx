@@ -1,11 +1,25 @@
-import React, { useState, useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { z } from 'zod';
 import { designerApi } from '../../../designers/api';
 import { Designer } from '../../../designers/types';
+import { useZodForm } from '../../../../hooks/useZodForm';
 import { Button } from '../../../../components/ui/Button';
 import { Input } from '../../../../components/ui/Input';
+import { Textarea } from '../../../../components/ui/Textarea';
+import { Select } from '../../../../components/ui/Select';
 import { X, Save } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+
+// 设计师表单验证 Schema
+const designerSchema = z.object({
+  name: z.string().min(1, '设计师名称必填').max(100, '名称最多100个字符'),
+  email: z.string().email('请输入有效的邮箱地址').optional().or(z.literal('')),
+  bio: z.string().max(1000, '简介最多1000个字符').optional(),
+  status: z.enum(['active', 'inactive']),
+});
+
+type DesignerFormData = z.infer<typeof designerSchema>;
 
 interface DesignerFormProps {
   initialData?: Designer;
@@ -13,41 +27,67 @@ interface DesignerFormProps {
   onCancel: () => void;
 }
 
+/**
+ * 设计师编辑表单
+ *
+ * 优化点：
+ * - 使用 useZodForm 进行表单验证
+ * - 邮箱格式自动验证
+ * - 统一的错误显示和 API 调用处理
+ */
 export function DesignerForm({ initialData, onSave, onCancel }: DesignerFormProps) {
   const { t } = useTranslation();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState<Partial<Designer>>({
-    name: '',
-    email: '',
-    bio: '',
-    level: 'mid',
-    status: 'active',
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useZodForm<DesignerFormData>({
+    schema: designerSchema,
+    defaultValues: {
+      name: '',
+      email: '',
+      bio: '',
+      status: 'active' as const,
+    },
   });
 
+  // 状态选项
+  const statusOptions = useMemo(
+    () => [
+      { value: 'active', label: t('active') },
+      { value: 'inactive', label: t('inactive') },
+    ],
+    [t]
+  );
+
+  // 当有初始数据时，填充表单
   useEffect(() => {
     if (initialData) {
-      setFormData(initialData);
+      reset({
+        name: initialData.name || '',
+        email: initialData.email || '',
+        bio: initialData.bio || '',
+        status: (initialData.status as 'active' | 'inactive') || 'active',
+      });
     }
-  }, [initialData]);
+  }, [initialData, reset]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+  // 提交表单
+  const onSubmit = async (data: DesignerFormData) => {
     try {
       if (initialData?.id) {
-        await designerApi.update(initialData.id, formData);
+        await designerApi.update(initialData.id, data);
         toast.success(t('designerUpdated'));
       } else {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        await designerApi.create(formData as any);
+        await designerApi.create(data as Parameters<typeof designerApi.create>[0]);
         toast.success(t('designerCreated'));
       }
       onSave();
     } catch (error) {
       console.error('Failed to save designer', error);
       toast.error(t('saveFailed'));
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -62,52 +102,38 @@ export function DesignerForm({ initialData, onSave, onCancel }: DesignerFormProp
         </button>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form
+        onSubmit={handleSubmit(onSubmit as unknown as Parameters<typeof handleSubmit>[0])}
+        className="space-y-4"
+      >
+        {/* 设计师名称 */}
+        <Input
+          {...register('name')}
+          label={t('name')}
+          placeholder={t('enterDesignerName')}
+          error={errors.name?.message}
+        />
+
+        {/* 邮箱 */}
+        <Input
+          {...register('email')}
+          label={t('email')}
+          type="email"
+          placeholder="designer@example.com"
+          error={errors.email?.message}
+        />
+
+        {/* 简介 */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">{t('name')}</label>
-          <Input
-            required
-            value={formData.name}
-            onChange={e => setFormData({ ...formData, name: e.target.value })}
-            placeholder={t('enterName')}
-          />
+          <label className="block text-xs font-bold text-gray-500 uppercase mb-1">{t('bio')}</label>
+          <Textarea {...register('bio')} placeholder={t('enterBio')} rows={4} />
+          {errors.bio && <p className="mt-1 text-xs text-danger">{errors.bio.message}</p>}
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">{t('email')}</label>
-          <Input
-            type="email"
-            value={formData.email || ''}
-            onChange={e => setFormData({ ...formData, email: e.target.value })}
-            placeholder="designer@example.com"
-          />
-        </div>
+        {/* 状态 */}
+        <Select {...register('status')} label={t('status')} options={statusOptions} />
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">{t('bio')}</label>
-          <textarea
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none min-h-[100px]"
-            value={formData.bio || ''}
-            onChange={e => setFormData({ ...formData, bio: e.target.value })}
-            placeholder={t('enterBio')}
-          />
-        </div>
-
-        <div className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            id="status"
-            checked={formData.status === 'active'}
-            onChange={e =>
-              setFormData({ ...formData, status: e.target.checked ? 'active' : 'inactive' })
-            }
-            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-          />
-          <label htmlFor="status" className="text-sm text-gray-700">
-            {t('active')}
-          </label>
-        </div>
-
+        {/* 操作按钮 */}
         <div className="flex justify-end gap-3 pt-4">
           <Button type="button" variant="secondary" onClick={onCancel}>
             {t('cancel')}

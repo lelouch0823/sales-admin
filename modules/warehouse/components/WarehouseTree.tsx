@@ -11,6 +11,7 @@ import {
   Building2,
 } from 'lucide-react';
 import { AnimatedBox } from '../../../components/motion';
+import { Skeleton } from '../../../components/common/Skeleton';
 
 interface WarehouseTreeProps {
   onSelect: (warehouse: Warehouse) => void;
@@ -90,8 +91,18 @@ export function WarehouseTree({ onSelect, selectedId }: WarehouseTreeProps) {
     );
   };
 
+  // 优化：使用骨架屏替代文字 Loading
   if (isLoading) {
-    return <div className="p-4 text-center text-gray-400 text-sm">Loading hierarchy...</div>;
+    return (
+      <div className="bg-white border-r border-gray-200 h-full w-80 p-4 space-y-3">
+        {[1, 2, 3, 4].map(i => (
+          <div key={i} className="flex items-center gap-2">
+            <Skeleton variant="circular" width={24} height={24} />
+            <Skeleton className="h-5 flex-1" />
+          </div>
+        ))}
+      </div>
+    );
   }
 
   return (

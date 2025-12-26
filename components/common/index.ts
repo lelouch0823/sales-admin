@@ -20,3 +20,4 @@ export { Alert } from './Alert';
 export type { AlertProps } from './Alert';
 export { Breadcrumb } from './Breadcrumb';
 export type { BreadcrumbProps, BreadcrumbItem } from './Breadcrumb';
+export { CommandMenu } from './CommandMenu';
