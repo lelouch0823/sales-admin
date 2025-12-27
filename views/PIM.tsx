@@ -1,13 +1,24 @@
 import React, { useState, useMemo } from 'react';
-import { Search, Plus, UploadCloud, Edit3, CheckSquare, Square, Trash2, ArrowUpCircle, XCircle, Filter } from 'lucide-react';
+import {
+  Search,
+  Plus,
+  UploadCloud,
+  Edit3,
+  CheckSquare,
+  Square,
+  Trash2,
+  ArrowUpCircle,
+  XCircle,
+  Filter,
+} from 'lucide-react';
 import { useApp } from '../lib/context';
 import { useToast } from '../lib/toast';
 import { Card } from '../components/common/Card';
 import { Badge } from '../components/common/Badge';
 import { EmptyState } from '../components/common/EmptyState';
 import { Product, ProductStatus } from '../types';
-import { ProductEditor } from '../components/pim/ProductEditor';
-import { ProductFilters } from '../components/pim/ProductFilters';
+import { ProductEditor } from '../modules/pim/components/ProductEditor';
+import { ProductFilters } from '../modules/pim/components/ProductFilters';
 import { CSVImportModal } from '../modules/pim/components/CSVImportModal';
 import { useTranslation } from 'react-i18next';
 
@@ -43,7 +54,9 @@ export const PIMView: React.FC = () => {
   }, [products]);
 
   const filteredProducts = products.filter(p => {
-    const matchesSearch = p.name.toLowerCase().includes(search.toLowerCase()) || p.sku.toLowerCase().includes(search.toLowerCase());
+    const matchesSearch =
+      p.name.toLowerCase().includes(search.toLowerCase()) ||
+      p.sku.toLowerCase().includes(search.toLowerCase());
     const matchesStatus = filterStatus === 'ALL' || p.status === filterStatus;
     const matchesCategory = filterCategory === 'ALL' || p.category === filterCategory;
     const matchesBrand = filterBrand === 'ALL' || p.brand === filterBrand;
@@ -102,10 +115,10 @@ export const PIMView: React.FC = () => {
       toast.success(t('alerts.pim.update_success'));
     } else {
       addProduct({
-        ...productForm as Product,
+        ...(productForm as Product),
         imageUrl: productForm.mediaAssets?.[0]?.url || 'https://placehold.co/50',
         updatedAt: new Date().toISOString(),
-        updatedBy: currentUser.id
+        updatedBy: currentUser.id,
       });
       toast.success(t('alerts.pim.create_success'));
     }
@@ -122,7 +135,7 @@ export const PIMView: React.FC = () => {
             type="text"
             placeholder={t('pim.search_placeholder')}
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={e => setSearch(e.target.value)}
             className="w-full pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:border-brand"
           />
         </div>
@@ -153,27 +166,47 @@ export const PIMView: React.FC = () => {
 
       <ProductFilters
         show={showFilters}
-        filterStatus={filterStatus} setFilterStatus={setFilterStatus}
-        filterCategory={filterCategory} setFilterCategory={setFilterCategory}
-        filterBrand={filterBrand} setFilterBrand={setFilterBrand}
-        brands={brands} categories={categories}
+        filterStatus={filterStatus}
+        setFilterStatus={setFilterStatus}
+        filterCategory={filterCategory}
+        setFilterCategory={setFilterCategory}
+        filterBrand={filterBrand}
+        setFilterBrand={setFilterBrand}
+        brands={brands}
+        categories={categories}
       />
 
       {/* Batch Action Bar - Uses Primary Background */}
       {selectedIds.size > 0 && canEdit && (
         <div className="bg-primary text-white px-4 py-3 rounded-lg flex items-center justify-between shadow-lg animate-in fade-in slide-in-from-bottom-2">
-          <div className="text-sm font-medium pl-2">{selectedIds.size} {t('common.selected')}</div>
+          <div className="text-sm font-medium pl-2">
+            {selectedIds.size} {t('common.selected')}
+          </div>
           <div className="flex items-center gap-3">
-            <button onClick={() => setSelectedIds(new Set())} className="text-gray-400 hover:text-white text-sm mr-2">{t('common.cancel')}</button>
+            <button
+              onClick={() => setSelectedIds(new Set())}
+              className="text-gray-400 hover:text-white text-sm mr-2"
+            >
+              {t('common.cancel')}
+            </button>
 
-            <button onClick={() => handleBatchStatus('PUBLISHED')} className="flex items-center gap-1 bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded text-xs font-bold">
+            <button
+              onClick={() => handleBatchStatus('PUBLISHED')}
+              className="flex items-center gap-1 bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded text-xs font-bold"
+            >
               <ArrowUpCircle size={14} /> {t('pim.batch.publish')}
             </button>
-            <button onClick={() => handleBatchStatus('UNPUBLISHED')} className="flex items-center gap-1 bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded text-xs font-bold">
+            <button
+              onClick={() => handleBatchStatus('UNPUBLISHED')}
+              className="flex items-center gap-1 bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded text-xs font-bold"
+            >
               <XCircle size={14} /> {t('pim.batch.unpublish')}
             </button>
             <div className="w-px h-4 bg-gray-700 mx-1"></div>
-            <button onClick={handleBatchDelete} className="flex items-center gap-1 text-red-400 hover:text-red-300 px-3 py-1.5 rounded text-xs font-bold">
+            <button
+              onClick={handleBatchDelete}
+              className="flex items-center gap-1 text-red-400 hover:text-red-300 px-3 py-1.5 rounded text-xs font-bold"
+            >
               <Trash2 size={14} /> {t('pim.batch.delete')}
             </button>
           </div>
@@ -187,7 +220,11 @@ export const PIMView: React.FC = () => {
               <tr className="bg-gray-50/50 border-b border-gray-100 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                 <th className="py-4 px-6 w-12">
                   <button onClick={toggleAll} className="text-gray-400 hover:text-gray-600">
-                    {selectedIds.size > 0 && selectedIds.size === filteredProducts.length ? <CheckSquare size={16} /> : <Square size={16} />}
+                    {selectedIds.size > 0 && selectedIds.size === filteredProducts.length ? (
+                      <CheckSquare size={16} />
+                    ) : (
+                      <Square size={16} />
+                    )}
                   </button>
                 </th>
                 <th className="py-4 px-6 w-16">{t('pim.table.img')}</th>
@@ -200,9 +237,15 @@ export const PIMView: React.FC = () => {
             </thead>
             <tbody className="divide-y divide-gray-100">
               {filteredProducts.map(p => (
-                <tr key={p.id} className={`hover:bg-gray-50/40 ${selectedIds.has(p.id) ? 'bg-brand-light/30' : ''}`}>
+                <tr
+                  key={p.id}
+                  className={`hover:bg-gray-50/40 ${selectedIds.has(p.id) ? 'bg-brand-light/30' : ''}`}
+                >
                   <td className="py-4 px-6">
-                    <button onClick={() => toggleSelection(p.id)} className={`text-gray-400 hover:text-gray-600 ${selectedIds.has(p.id) ? 'text-brand' : ''}`}>
+                    <button
+                      onClick={() => toggleSelection(p.id)}
+                      className={`text-gray-400 hover:text-gray-600 ${selectedIds.has(p.id) ? 'text-brand' : ''}`}
+                    >
                       {selectedIds.has(p.id) ? <CheckSquare size={16} /> : <Square size={16} />}
                     </button>
                   </td>
@@ -217,16 +260,35 @@ export const PIMView: React.FC = () => {
                   </td>
                   <td className="py-4 px-6 text-sm text-gray-600">{p.category}</td>
                   <td className="py-4 px-6">
-                    <Badge variant={p.status === 'PUBLISHED' ? 'success' : p.status === 'DRAFT' ? 'warning' : 'neutral'}>
+                    <Badge
+                      variant={
+                        p.status === 'PUBLISHED'
+                          ? 'success'
+                          : p.status === 'DRAFT'
+                            ? 'warning'
+                            : 'neutral'
+                      }
+                    >
                       {t(`consts.status.${p.status}`)}
                     </Badge>
                   </td>
                   <td className="py-4 px-6 text-xs space-y-1">
-                    <div className={p.allowBackorder ? 'text-success-text' : 'text-gray-400'}>{t('pim.table.backorder')}: {p.allowBackorder ? t('common.yes') : t('common.no')}</div>
-                    <div className={p.allowTransfer ? 'text-brand' : 'text-gray-400'}>{t('pim.table.transfer')}: {p.allowTransfer ? t('common.yes') : t('common.no')}</div>
+                    <div className={p.allowBackorder ? 'text-success-text' : 'text-gray-400'}>
+                      {t('pim.table.backorder')}:{' '}
+                      {p.allowBackorder ? t('common.yes') : t('common.no')}
+                    </div>
+                    <div className={p.allowTransfer ? 'text-brand' : 'text-gray-400'}>
+                      {t('pim.table.transfer')}:{' '}
+                      {p.allowTransfer ? t('common.yes') : t('common.no')}
+                    </div>
                   </td>
                   <td className="py-4 px-6 text-right">
-                    <button onClick={() => handleEdit(p)} className="text-gray-400 hover:text-brand"><Edit3 size={16} /></button>
+                    <button
+                      onClick={() => handleEdit(p)}
+                      className="text-gray-400 hover:text-brand"
+                    >
+                      <Edit3 size={16} />
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -234,7 +296,11 @@ export const PIMView: React.FC = () => {
                 <tr>
                   <td colSpan={7}>
                     <EmptyState
-                      onAction={() => { setSearch(''); setFilterStatus('ALL'); setFilterCategory('ALL'); }}
+                      onAction={() => {
+                        setSearch('');
+                        setFilterStatus('ALL');
+                        setFilterCategory('ALL');
+                      }}
                       actionLabel={t('common.clear_filters')}
                     />
                   </td>
@@ -248,7 +314,7 @@ export const PIMView: React.FC = () => {
       <ProductEditor
         isOpen={isEditorOpen}
         onClose={() => setIsEditorOpen(false)}
-        initialData={selectedProduct}
+        initialData={selectedProduct || undefined}
         onSave={handleSaveProduct}
         canEdit={canEdit}
       />

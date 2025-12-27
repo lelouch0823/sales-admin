@@ -321,7 +321,7 @@ export const CustomerDetailPanel: React.FC<CustomerDetailPanelProps> = ({
                       <div className="text-sm text-gray-900 font-medium">
                         {t(`consts.interaction_type.${interaction.type}`)}
                         <span className="font-normal text-gray-500 ml-2">
-                          by {user?.name || 'Unknown'}
+                          {t('crm.detail.by_user', { name: user?.name || t('common.unknown') })}
                         </span>
                       </div>
                       <div className="text-[10px] text-gray-400">{interaction.timestamp}</div>
@@ -337,7 +337,7 @@ export const CustomerDetailPanel: React.FC<CustomerDetailPanelProps> = ({
               <div className="relative">
                 <div className="absolute -left-[21px] top-1 w-2.5 h-2.5 rounded-full bg-gray-300 border-2 border-white"></div>
                 <div className="text-sm text-gray-900 font-medium">{t('crm.detail.created')}</div>
-                <div className="text-xs text-gray-500 mt-1">3 months ago</div>
+                <div className="text-xs text-gray-500 mt-1">{t('crm.detail.created_time_ago')}</div>
               </div>
             </div>
           </div>
@@ -401,7 +401,7 @@ export const CustomerDetailPanel: React.FC<CustomerDetailPanelProps> = ({
                   u.id !== customer.ownerUserId && !customer.sharedWith.some(s => s.userId === u.id)
               ).length === 0 && (
                 <div className="text-center text-sm text-gray-400 py-4">
-                  No users available to add.
+                  {t('crm.detail.no_users_available')}
                 </div>
               )}
             </div>

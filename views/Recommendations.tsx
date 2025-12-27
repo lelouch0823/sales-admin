@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { useApp } from '../lib/context';
 import { useToast } from '../lib/toast';
 import { Recommendation, Product, StockStatus } from '../types';
-import { RecsPreview } from '../components/recommendations/RecsPreview';
-import { RecsList } from '../components/recommendations/RecsList';
-import { RecsProductPicker } from '../components/recommendations/RecsProductPicker';
+import { RecsPreview } from '../modules/recommendations/components/RecsPreview';
+import { RecsList } from '../modules/recommendations/components/RecsList';
+import { RecsProductPicker } from '../modules/recommendations/components/RecsProductPicker';
 import { useTranslation } from 'react-i18next';
 
 interface RecsViewProps {
@@ -12,31 +12,46 @@ interface RecsViewProps {
 }
 
 export const RecommendationsView: React.FC<RecsViewProps> = ({ mode }) => {
-  const { 
-    tenants, 
-    currentUser, 
-    recommendations, 
-    products, 
+  const {
+    tenants,
+    currentUser,
+    recommendations,
+    products,
     storeStock,
-    addRecommendation, 
-    updateRecommendation, 
-    deleteRecommendation 
+    addRecommendation,
+    updateRecommendation,
+    deleteRecommendation,
   } = useApp();
   const { t } = useTranslation();
   const toast = useToast();
 
-  const [selectedTenantId, setSelectedTenantId] = useState<string>(
-    mode === 'STORE' || mode === 'PREVIEW' ? (currentUser.tenantId || tenants[1].id) : ''
-  );
-  
+  const [selectedTenantId, setSelectedTenantId] = useState<string>('');
+
+  // Effect to set default tenant when data loads
+  React.useEffect(() => {
+    if ((mode === 'STORE' || mode === 'PREVIEW') && !selectedTenantId && tenants?.length > 0) {
+      const storeTenant = tenants.find(t => t.type === 'STORE');
+      const defaultId = currentUser?.tenantId || storeTenant?.id || '';
+      if (defaultId) setSelectedTenantId(defaultId);
+    }
+  }, [mode, tenants, currentUser, selectedTenantId]);
+
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
+  if (!currentUser || !recommendations || !tenants || !products || !storeStock) {
+    return <div className="p-8 text-center text-muted">Loading data...</div>;
+  }
+
   // Filter recommendations based on mode
-  const filteredRecs = recommendations.filter(rec => {
-    if (mode === 'GLOBAL') return rec.tenantId === null;
-    if (mode === 'STORE') return rec.tenantId === selectedTenantId;
+  const filteredRecs = (recommendations || []).filter(rec => {
+    if (!rec) return false;
+    // Check for null/undefined explicitly before property access
+    if (mode === 'GLOBAL') return rec?.tenantId === null;
+    if (mode === 'STORE') return rec?.tenantId === selectedTenantId;
     return false;
   });
+
+  // Debugging
 
   // Sort by priority
   const sortedRecs = [...filteredRecs].sort((a, b) => a.priority - b.priority);
@@ -51,10 +66,10 @@ export const RecommendationsView: React.FC<RecsViewProps> = ({ mode }) => {
   const getPreviewRecs = () => {
     const storeRecs = recommendations.filter(r => r.tenantId === selectedTenantId && r.isEnabled);
     const globalRecs = recommendations.filter(r => r.tenantId === null && r.isEnabled);
-    
+
     // Store configuration fully overrides if present
     const hasStoreConfig = recommendations.some(r => r.tenantId === selectedTenantId);
-    
+
     if (hasStoreConfig) {
       return storeRecs.sort((a, b) => a.priority - b.priority);
     }
@@ -83,7 +98,7 @@ export const RecommendationsView: React.FC<RecsViewProps> = ({ mode }) => {
     }
 
     const newPriority = sortedRecs.length > 0 ? sortedRecs[sortedRecs.length - 1].priority + 1 : 1;
-    
+
     addRecommendation({
       tenantId: mode === 'GLOBAL' ? null : selectedTenantId,
       productId: product.id,
@@ -91,7 +106,7 @@ export const RecommendationsView: React.FC<RecsViewProps> = ({ mode }) => {
       endAt: '2099-12-31',
       priority: newPriority,
       isEnabled: true,
-      reason: ''
+      reason: '',
     });
     toast.success(t('alerts.recs.add_success'));
     setIsAddModalOpen(false);
@@ -100,7 +115,7 @@ export const RecommendationsView: React.FC<RecsViewProps> = ({ mode }) => {
   const movePriority = (rec: Recommendation, direction: 'up' | 'down') => {
     const index = sortedRecs.findIndex(r => r.id === rec.id);
     if (index === -1) return;
-    
+
     if (direction === 'up' && index > 0) {
       const prev = sortedRecs[index - 1];
       updateRecommendation(rec.id, { priority: prev.priority });
@@ -115,7 +130,7 @@ export const RecommendationsView: React.FC<RecsViewProps> = ({ mode }) => {
 
   if (mode === 'PREVIEW') {
     return (
-      <RecsPreview 
+      <RecsPreview
         recommendations={getPreviewRecs()}
         products={products}
         tenants={tenants}
@@ -128,7 +143,7 @@ export const RecommendationsView: React.FC<RecsViewProps> = ({ mode }) => {
 
   return (
     <>
-      <RecsList 
+      <RecsList
         mode={mode}
         recommendations={sortedRecs}
         products={products}
@@ -142,8 +157,8 @@ export const RecommendationsView: React.FC<RecsViewProps> = ({ mode }) => {
         onToggle={(id, val) => updateRecommendation(id, { isEnabled: val })}
         onDelete={deleteRecommendation}
       />
-      
-      <RecsProductPicker 
+
+      <RecsProductPicker
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         products={products}

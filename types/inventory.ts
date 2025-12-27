@@ -1,4 +1,4 @@
-import { StockStatus } from './product';
+import { StockStatus } from '../modules/pim/types';
 
 export interface Warehouse {
   id: string;
@@ -22,6 +22,7 @@ export interface InventoryMovement {
   id: string;
   sku: string;
   warehouseId: string;
+  inventoryId?: string; // Optional link to specific inventory record
   type: 'RECEIVE' | 'ISSUE' | 'TRANSFER_OUT' | 'TRANSFER_IN' | 'ADJUST' | 'RESERVE';
   quantity: number;
   referenceNo?: string;

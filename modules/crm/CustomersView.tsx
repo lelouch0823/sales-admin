@@ -11,6 +11,7 @@ import { BatchAssignModal } from './components/BatchAssignModal';
 import { useTranslation } from 'react-i18next';
 import { AnimatedBox } from '../../components/motion';
 import { Tooltip, TooltipProvider } from '../../components/primitives';
+import { Button, Input } from '../../components/ui';
 
 /**
  * 客户管理视图 (CustomersView)
@@ -146,19 +147,19 @@ export const CustomersView: React.FC = () => {
 
           <div className="flex items-center gap-3 w-full md:w-auto">
             <div className="relative flex-1 md:w-64">
-              <Search size={16} className="absolute left-3 top-2.5 text-gray-400" />
-              <input
-                type="text"
+              <Search size={16} className="absolute left-3 top-2.5 text-gray-400 z-10" />
+              <Input
                 placeholder={t('crm.search_placeholder')}
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:border-brand transition-colors"
+                className="pl-9"
+                fullWidth
               />
             </div>
             <Tooltip content={t('common.filters')}>
-              <button className="p-2 border border-gray-200 bg-white rounded-lg text-gray-500 hover:bg-gray-50">
+              <Button variant="secondary" className="p-2 h-auto">
                 <Filter size={18} />
-              </button>
+              </Button>
             </Tooltip>
           </div>
         </div>
@@ -173,27 +174,33 @@ export const CustomersView: React.FC = () => {
               {selectedIds.size} {t('common.selected')}
             </div>
             <div className="flex items-center gap-3">
-              <button
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={() => setSelectedIds(new Set())}
-                className="text-gray-400 hover:text-white text-sm"
+                className="text-gray-200 hover:text-white hover:bg-white/10"
               >
                 {t('common.cancel')}
-              </button>
+              </Button>
               {tab === 'POOL' && (
-                <button
+                <Button
+                  variant="secondary"
+                  size="sm"
                   onClick={handleBatchClaim}
-                  className="bg-white text-primary px-3 py-1.5 rounded text-sm font-bold hover:bg-gray-100"
+                  className="font-bold text-primary"
                 >
                   {t('crm.batch.claim')}
-                </button>
+                </Button>
               )}
               {(currentUser.role === 'SUPER_ADMIN' || currentUser.role === 'STORE_MANAGER') && (
-                <button
+                <Button
+                  variant="primary"
+                  size="sm"
                   onClick={() => setIsAssignModalOpen(true)}
-                  className="flex items-center gap-1 bg-brand text-white px-3 py-1.5 rounded text-sm font-bold hover:bg-brand-hover"
+                  className="bg-brand hover:bg-brand-hover text-white border-none"
                 >
-                  <UserCheck size={16} /> {t('crm.batch.assign')}
-                </button>
+                  <UserCheck size={16} className="mr-1" /> {t('crm.batch.assign')}
+                </Button>
               )}
             </div>
           </AnimatedBox>

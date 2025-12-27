@@ -1,6 +1,6 @@
 /**
  * 认证服务
- * 
+ *
  * 处理用户登录、登出、Token 管理等认证相关操作
  * 使用 normalizers 将后端 API 响应转换为前端类型
  */
@@ -35,8 +35,10 @@ export interface ChangePasswordRequest {
 
 // ============ 本地状态（用于开发环境 mock） ============
 
+import { MOCK_USERS } from '../data/users';
+
 // 开发模式标志（当后端不可用时使用 mock 数据）
-const USE_MOCK = false;
+const USE_MOCK = true;
 
 // Mock 用户数据（使用前端类型）
 const MOCK_USER: User = {
@@ -59,21 +61,34 @@ export const authApi = {
     if (USE_MOCK) {
       // Mock 模式
       await new Promise(resolve => setTimeout(resolve, 500));
-      const mockToken = `mock_jwt_${Date.now()}`;
+
+      // 尝试根据邮箱查找 Mock 用户
+      const foundUser = MOCK_USERS.find(u => u.email === email);
+
+      // 如果找不到，或者密码错误 (这里简化逻辑，只检查用户是否存在)，则报错
+      // 实际开发中可以添加密码检查: if (foundUser && password === 'password') ...
+      const userToReturn = foundUser || MOCK_USER;
+
+      const mockToken = `mock_jwt_${Date.now()}_${userToReturn.id}`;
       tokenManager.setAccessToken(mockToken);
       tokenManager.setRefreshToken(`mock_refresh_${Date.now()}`);
+
       return {
         accessToken: mockToken,
         refreshToken: `mock_refresh_${Date.now()}`,
-        user: MOCK_USER,
+        user: userToReturn,
       };
     }
 
     // 调用真实 API
-    const apiResponse = await http.post<ApiLoginResponse>(API_ENDPOINTS.AUTH.LOGIN, {
-      usernameOrEmail: email,
-      password,
-    }, { skipAuth: true });
+    const apiResponse = await http.post<ApiLoginResponse>(
+      API_ENDPOINTS.AUTH.LOGIN,
+      {
+        usernameOrEmail: email,
+        password,
+      },
+      { skipAuth: true }
+    );
 
     // 保存 Token
     tokenManager.setAccessToken(apiResponse.accessToken);

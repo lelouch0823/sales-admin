@@ -13,7 +13,8 @@ import { Card } from '../../../components/common/Card';
 import { Badge } from '../../../components/common/Badge';
 import { Button, Input, Select, Textarea } from '../../../components/ui';
 import { Modal } from '../../../components/common/Modal';
-import { EmptyState } from '../../../components/common/EmptyState';
+import { DataTable } from '../../../components/common/DataTable';
+
 import { dateUtils } from '../../../utils';
 
 // ============ 类型定义 ============
@@ -221,98 +222,109 @@ export const ReservationList: React.FC<ReservationListProps> = ({
 
       {/* 预订列表 */}
       <Card noPadding>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead>
-              <tr className="bg-gray-50 border-b border-gray-100 text-xs font-semibold text-gray-500 uppercase">
-                <th className="py-4 px-6">{t('inventory.reservation.sku', 'SKU')}</th>
-                <th className="py-4 px-6">{t('inventory.reservation.warehouse', '仓库')}</th>
-                <th className="py-4 px-6">{t('inventory.reservation.quantity', '数量')}</th>
-                <th className="py-4 px-6">{t('inventory.reservation.status', '状态')}</th>
-                <th className="py-4 px-6">{t('inventory.reservation.expires', '过期时间')}</th>
-                <th className="py-4 px-6">{t('inventory.reservation.created', '创建')}</th>
-                <th className="py-4 px-6 text-right">{t('common.actions', '操作')}</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {filteredReservations.map(reservation => {
-                const statusConfig = STATUS_CONFIG[reservation.status];
-
-                return (
-                  <tr key={reservation.id} className="hover:bg-gray-50">
-                    <td className="py-4 px-6">
-                      <div className="font-medium text-primary">{reservation.sku}</div>
-                      <div className="text-xs text-gray-500">{reservation.productName}</div>
-                    </td>
-                    <td className="py-4 px-6 text-sm text-gray-600">{reservation.warehouseName}</td>
-                    <td className="py-4 px-6">
-                      <span className="font-bold text-primary">{reservation.quantity}</span>
-                    </td>
-                    <td className="py-4 px-6">
-                      <Badge variant={statusConfig.variant}>
-                        {t(
-                          `inventory.reservation.status.${reservation.status.toLowerCase()}`,
-                          statusConfig.label
-                        )}
-                      </Badge>
-                    </td>
-                    <td className="py-4 px-6 text-sm text-gray-500">
-                      {reservation.expiresAt ? (
-                        <span className="flex items-center gap-1">
-                          <Calendar size={12} />
-                          {dateUtils.formatDate(reservation.expiresAt)}
-                        </span>
-                      ) : (
-                        '-'
+        <div className="overflow-hidden rounded-lg">
+          <DataTable<Reservation>
+            data={filteredReservations}
+            rowKey="id"
+            columns={[
+              {
+                key: 'sku',
+                header: t('inventory.reservation.sku', 'SKU'),
+                accessor: 'sku',
+                render: (_, reservation) => (
+                  <div>
+                    <div className="font-medium text-primary">{reservation.sku}</div>
+                    <div className="text-xs text-gray-500">{reservation.productName}</div>
+                  </div>
+                ),
+              },
+              {
+                key: 'warehouseName',
+                header: t('inventory.reservation.warehouse', '仓库'),
+                accessor: 'warehouseName',
+                render: (_, r) => <span className="text-gray-600 text-sm">{r.warehouseName}</span>,
+              },
+              {
+                key: 'quantity',
+                header: t('inventory.reservation.quantity', '数量'),
+                accessor: 'quantity',
+                render: (_, r) => <span className="font-bold text-primary">{r.quantity}</span>,
+              },
+              {
+                key: 'status',
+                header: t('inventory.reservation.status', '状态'),
+                accessor: 'status',
+                render: (_, r) => {
+                  const statusConfig = STATUS_CONFIG[r.status];
+                  return (
+                    <Badge variant={statusConfig.variant}>
+                      {t(
+                        `inventory.reservation.status.${r.status.toLowerCase()}`,
+                        statusConfig.label
                       )}
-                    </td>
-                    <td className="py-4 px-6 text-sm text-gray-500">
-                      <div className="flex items-center gap-1">
-                        <User size={12} />
-                        {reservation.createdByName}
-                      </div>
-                      <div className="flex items-center gap-1 text-xs">
-                        <Clock size={10} />
-                        {dateUtils.formatDate(reservation.createdAt)}
-                      </div>
-                    </td>
-                    <td className="py-4 px-6 text-right">
-                      {reservation.status === 'ACTIVE' && (
-                        <div className="flex gap-2 justify-end">
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            onClick={() => onFulfillReservation(reservation.id)}
-                          >
-                            {t('inventory.reservation.fulfill', '完成')}
-                          </Button>
-                          <button
-                            onClick={() => onCancelReservation(reservation.id)}
-                            className="text-gray-400 hover:text-danger-text"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-              {filteredReservations.length === 0 && (
-                <tr>
-                  <td colSpan={7}>
-                    <EmptyState
-                      title={t('inventory.reservation.empty', '暂无预订')}
-                      description={t(
-                        'inventory.reservation.empty_desc',
-                        '点击"创建预订"添加新的库存预订'
-                      )}
-                    />
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                    </Badge>
+                  );
+                },
+              },
+              {
+                key: 'expiresAt',
+                header: t('inventory.reservation.expires', '过期时间'),
+                accessor: 'expiresAt',
+                render: (_, r) =>
+                  r.expiresAt ? (
+                    <span className="flex items-center gap-1 text-sm text-gray-500">
+                      <Calendar size={12} />
+                      {dateUtils.formatDate(r.expiresAt)}
+                    </span>
+                  ) : (
+                    <span className="text-gray-400">-</span>
+                  ),
+              },
+              {
+                key: 'createdAt',
+                header: t('inventory.reservation.created', '创建'),
+                accessor: 'createdAt',
+                render: (_, r) => (
+                  <div className="text-sm text-gray-500">
+                    <div className="flex items-center gap-1">
+                      <User size={12} />
+                      {r.createdByName}
+                    </div>
+                    <div className="flex items-center gap-1 text-xs mt-0.5">
+                      <Clock size={10} />
+                      {dateUtils.formatDate(r.createdAt)}
+                    </div>
+                  </div>
+                ),
+              },
+              {
+                key: 'actions',
+                header: t('common.actions', '操作'),
+                accessor: 'id',
+                render: (_, r) =>
+                  r.status === 'ACTIVE' ? (
+                    <div className="flex gap-2 justify-end">
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => onFulfillReservation(r.id)}
+                      >
+                        {t('inventory.reservation.fulfill', '完成')}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onCancelReservation(r.id)}
+                        className="text-gray-400 hover:text-danger-text px-2"
+                      >
+                        <Trash2 size={16} />
+                      </Button>
+                    </div>
+                  ) : null,
+              },
+            ]}
+            emptyText={t('inventory.reservation.empty', '暂无预订')}
+          />
         </div>
       </Card>
 
@@ -356,11 +368,11 @@ export const ReservationList: React.FC<ReservationListProps> = ({
             <label className="block text-sm font-medium text-gray-700 mb-2">
               {t('inventory.reservation.expires_at', '过期时间（可选）')}
             </label>
-            <input
+            <Input
               type="date"
               value={newExpiresAt}
               onChange={e => setNewExpiresAt(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"
+              fullWidth
             />
           </div>
 

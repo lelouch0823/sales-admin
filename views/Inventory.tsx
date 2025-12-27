@@ -19,9 +19,9 @@ import { Card } from '../components/common/Card';
 import { Badge } from '../components/common/Badge';
 import { StatCard } from '../components/StatCard';
 import { EmptyState } from '../components/common/EmptyState';
-import { StockActionModal } from '../components/inventory/StockActionModal';
-import { LedgerModal } from '../components/inventory/LedgerModal';
-import { InventorySettings } from '../components/inventory/InventorySettings';
+import { StockActionModal } from '../modules/inventory/components/StockActionModal';
+import { LedgerModal } from '../modules/inventory/components/LedgerModal';
+import { InventorySettings } from '../modules/inventory/components/InventorySettings';
 import { useTranslation } from 'react-i18next';
 
 export const InventoryView: React.FC = () => {

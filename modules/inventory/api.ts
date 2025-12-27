@@ -1,6 +1,6 @@
 /**
  * 库存管理 API
- * 
+ *
  * 对接后端 /inventory 接口
  */
 
@@ -71,7 +71,10 @@ const baseApi = createApiWithStats<
   Partial<InventoryBalance>,
   Partial<InventoryBalance>,
   InventoryFilterParams
->('/inventory');
+>('/inventory', 'inventory'); // 启用 mock
+
+import { db } from '../../lib/db';
+import { USE_MOCK_API } from '../../lib/api-factory';
 
 // 扩展库存特有方法
 export const inventoryApi = {
@@ -84,6 +87,12 @@ export const inventoryApi = {
    * 获取库存变动记录
    */
   getMovements: async (inventoryId?: string): Promise<InventoryMovement[]> => {
+    if (USE_MOCK_API) {
+      await new Promise(r => setTimeout(r, 400));
+      const all = db.get('movements') as InventoryMovement[];
+      if (inventoryId) return all.filter(m => m.inventoryId === inventoryId);
+      return all;
+    }
     if (inventoryId) {
       return http.get<InventoryMovement[]>(`/inventory/${inventoryId}/movements`);
     }

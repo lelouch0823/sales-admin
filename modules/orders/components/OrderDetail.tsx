@@ -83,7 +83,7 @@ export function OrderDetail({ id, onBack }: OrderDetailProps) {
   }
 
   if (!order) {
-    return <div className="p-8 text-center text-red-500">Order not found</div>;
+    return <div className="p-8 text-center text-red-500">{t('orders.not_found')}</div>;
   }
 
   return (
@@ -191,7 +191,7 @@ export function OrderDetail({ id, onBack }: OrderDetailProps) {
           <section className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
             <h2 className="text-lg font-semibold mb-4">{t('shippingAddress')}</h2>
             <p className="text-sm text-gray-600 leading-relaxed">
-              {order.shippingAddress || 'No shipping address provided'}
+              {order.shippingAddress || t('orders.no_shipping_address')}
             </p>
           </section>
         </div>

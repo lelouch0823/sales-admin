@@ -95,8 +95,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
               clearSession();
             }
           } else {
-            // eslint-disable-next-line no-console
-            console.log('Session expired during init');
             clearSession();
           }
         }

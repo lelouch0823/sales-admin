@@ -1,7 +1,12 @@
 import React, { createContext, useContext, useState, ReactNode, useMemo, useEffect } from 'react';
 import {
-  Tenant, User, Recommendation, AuditLog, SharedMember,
-  Warehouse, StockStatus
+  Tenant,
+  User,
+  Recommendation,
+  AuditLog,
+  SharedMember,
+  Warehouse,
+  StockStatus,
 } from '../types';
 
 // 导入各业务模块的类型定义
@@ -22,15 +27,15 @@ interface AppContextType {
   currentUser: User; // 当前登录用户
 
   // --- 数据状态 (Data State) ---
-  tenants: Tenant[];           // 租户/门店列表
-  users: User[];               // 系统用户列表
-  products: Product[];         // 商品列表 (PIM)
-  warehouses: Warehouse[];     // 仓库列表
+  tenants: Tenant[]; // 租户/门店列表
+  users: User[]; // 系统用户列表
+  products: Product[]; // 商品列表 (PIM)
+  warehouses: Warehouse[]; // 仓库列表
   inventory: InventoryBalance[]; // 库存余额表 (SKU x Warehouse)
-  movements: InventoryMovement[];// 库存变动流水
+  movements: InventoryMovement[]; // 库存变动流水
   recommendations: Recommendation[]; // 推荐配置列表
-  customers: Customer[];       // 客户列表 (CRM)
-  logs: AuditLog[];            // 审计日志
+  customers: Customer[]; // 客户列表 (CRM)
+  logs: AuditLog[]; // 审计日志
 
   // --- 计算属性 (Computed Properties) ---
   storeStock: StoreProductState[]; // 计算后的门店库存状态 (用于推荐系统判断是否缺货)
@@ -49,7 +54,12 @@ interface AppContextType {
    * 调整库存 (入库/出库/锁定)
    * @param type RECEIVE(入库), ISSUE(出库), RESERVE(预订锁定)
    */
-  adjustInventory: (sku: string, warehouseId: string, quantity: number, type: 'RECEIVE' | 'ISSUE' | 'RESERVE') => Promise<void>;
+  adjustInventory: (
+    sku: string,
+    warehouseId: string,
+    quantity: number,
+    type: 'RECEIVE' | 'ISSUE' | 'RESERVE'
+  ) => Promise<void>;
   /**
    * 调拨库存
    * @param fromWh 来源仓库ID
@@ -83,7 +93,7 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 
 /**
  * AppProvider 组件
- * 职责: 
+ * 职责:
  * 1. 初始化并加载所有模拟数据 (从 api.ts 模拟后端)
  * 2. 提供全应用共享的业务逻辑方法 (Action Handlers)
  * 3. 处理跨模块的数据联动 (如: 推荐系统依赖库存计算)
@@ -108,10 +118,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   // --- 数据加载 (Data Fetching) ---
   const refreshData = async () => {
     try {
-      // 并行请求所有数据，模拟真实环境中的并发加载
-      const [
-        ts, whs, us, ps, inv, mov, recs, custs, ls
-      ] = await Promise.all([
+      // 并行请求所有数据，使用 allSettled 防止单个请求失败导致整体崩溃
+      const results = await Promise.allSettled([
         systemApi.getTenants(),
         systemApi.getWarehouses(),
         userApi.list(),
@@ -120,20 +128,27 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         inventoryApi.getMovements(),
         recsApi.list(),
         crmApi.list(),
-        systemApi.getLogs()
+        systemApi.getLogs(),
       ]);
 
-      setTenants(ts);
-      setWarehouses(whs);
-      setUsers(us);
-      setProducts(ps);
-      setInventory(inv);
-      setMovements(mov);
-      setRecommendations(recs);
-      setCustomers(custs);
-      setLogs(ls);
+      // 辅助函数：提取成功结果或返回默认空数组
+      const getResult = <T,>(result: PromiseSettledResult<T>, defaultVal: T): T => {
+        if (result.status === 'fulfilled') return result.value;
+        console.warn('Data fetch failed:', result.reason);
+        return defaultVal;
+      };
+
+      setTenants(getResult(results[0], []));
+      setWarehouses(getResult(results[1], []));
+      setUsers(getResult(results[2], []));
+      setProducts(getResult(results[3], []));
+      setInventory(getResult(results[4], []));
+      setMovements(getResult(results[5], []));
+      setRecommendations(getResult(results[6], []));
+      setCustomers(getResult(results[7], []));
+      setLogs(getResult(results[8], []));
     } catch (e) {
-      console.error("Failed to fetch data", e);
+      console.error('Critical error in data fetching', e);
     } finally {
       setIsLoadingData(false);
     }
@@ -154,7 +169,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       targetId,
       operatorId: currentUser.id,
       details,
-      timestamp: new Date().toLocaleString()
+      timestamp: new Date().toLocaleString(),
     };
     // 乐观更新 UI (Optimistic UI update) - 立即显示，无需等待后端返回
     setLogs(prev => [newLog, ...prev]);
@@ -169,33 +184,35 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const storeStock = useMemo(() => {
     const computed: StoreProductState[] = [];
     products.forEach(p => {
-      warehouses.filter(w => w.type === 'STORE').forEach(w => {
-        const bal = inventory.find(i => i.sku === p.sku && i.warehouseId === w.id);
-        const available = bal ? bal.onHand - bal.reserved : 0;
+      warehouses
+        .filter(w => w.type === 'STORE')
+        .forEach(w => {
+          const bal = inventory.find(i => i.sku === p.sku && i.warehouseId === w.id);
+          const available = bal ? bal.onHand - bal.reserved : 0;
 
-        let status: StockStatus = 'UNAVAILABLE';
+          let status: StockStatus = 'UNAVAILABLE';
 
-        if (available > 0) {
-          status = 'IN_STOCK'; // 有现货
-        } else if (p.allowBackorder) {
-          status = 'BACKORDER'; // 允许缺货预订
-        } else if (p.allowTransfer) {
-          // 检查总仓(DC)是否有货
-          const dcStock = inventory.find(i => i.sku === p.sku && i.warehouseId.includes('dc'))?.onHand || 0;
-          if (dcStock > 0) status = 'TRANSFERABLE'; // 允许调货
-        }
+          if (available > 0) {
+            status = 'IN_STOCK'; // 有现货
+          } else if (p.allowBackorder) {
+            status = 'BACKORDER'; // 允许缺货预订
+          } else if (p.allowTransfer) {
+            // 检查总仓(DC)是否有货
+            const dcStock =
+              inventory.find(i => i.sku === p.sku && i.warehouseId.includes('dc'))?.onHand || 0;
+            if (dcStock > 0) status = 'TRANSFERABLE'; // 允许调货
+          }
 
-        computed.push({
-          productId: p.id,
-          tenantId: w.tenantId,
-          stockStatus: status,
-          stockCount: available
+          computed.push({
+            productId: p.id,
+            tenantId: w.tenantId,
+            stockStatus: status,
+            stockCount: available,
+          });
         });
-      });
     });
     return computed;
   }, [products, inventory, warehouses]);
-
 
   // --- 业务操作实现 (Actions Implementation) ---
 
@@ -212,7 +229,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     await refreshData();
   };
 
-  const adjustInventory = async (sku: string, warehouseId: string, quantity: number, type: 'RECEIVE' | 'ISSUE' | 'RESERVE') => {
+  const adjustInventory = async (
+    sku: string,
+    warehouseId: string,
+    quantity: number,
+    type: 'RECEIVE' | 'ISSUE' | 'RESERVE'
+  ) => {
     // 查找或创建库存记录 ID
     const existingBalance = inventory.find(b => b.sku === sku && b.warehouseId === warehouseId);
     const inventoryId = existingBalance?.id || `temp-${Date.now()}`;
@@ -220,11 +242,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     // 调用 API
     await inventoryApi.adjust({
       inventoryId,
-      newQuantity: type === 'RECEIVE'
-        ? (existingBalance?.onHand || 0) + quantity
-        : Math.max(0, (existingBalance?.onHand || 0) - quantity),
+      newQuantity:
+        type === 'RECEIVE'
+          ? (existingBalance?.onHand || 0) + quantity
+          : Math.max(0, (existingBalance?.onHand || 0) - quantity),
       reason: type.toLowerCase(),
-      notes: `${type} quantity ${quantity} for SKU ${sku}`
+      notes: `${type} quantity ${quantity} for SKU ${sku}`,
     });
     logAction(type, 'INVENTORY', `${sku}@${warehouseId}`, `${type} quantity ${quantity}`);
     await refreshData();
@@ -328,19 +351,40 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   return (
-    <AppContext.Provider value={{
-      currentUser, tenants, users, products, recommendations, customers, logs, storeStock,
-      warehouses, inventory, movements,
-      isLoadingData,
-      addRecommendation, updateRecommendation, deleteRecommendation,
-      addCustomer, updateCustomer, claimCustomer, releaseCustomer,
-      addSharedMember, removeSharedMember,
-      addUser, updateUser,
-      addProduct, updateProduct, adjustInventory, transferInventory,
-      logAction,
-      switchUser: authSwitchUser,
-      resetDemoData
-    }}>
+    <AppContext.Provider
+      value={{
+        currentUser,
+        tenants,
+        users,
+        products,
+        recommendations,
+        customers,
+        logs,
+        storeStock,
+        warehouses,
+        inventory,
+        movements,
+        isLoadingData,
+        addRecommendation,
+        updateRecommendation,
+        deleteRecommendation,
+        addCustomer,
+        updateCustomer,
+        claimCustomer,
+        releaseCustomer,
+        addSharedMember,
+        removeSharedMember,
+        addUser,
+        updateUser,
+        addProduct,
+        updateProduct,
+        adjustInventory,
+        transferInventory,
+        logAction,
+        switchUser: authSwitchUser,
+        resetDemoData,
+      }}
+    >
       {children}
     </AppContext.Provider>
   );

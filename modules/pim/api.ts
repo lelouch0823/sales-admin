@@ -1,6 +1,6 @@
 /**
  * 产品管理 API
- * 
+ *
  * 对接后端 /products 接口
  */
 
@@ -44,9 +44,13 @@ export interface BatchStatusRequest {
 // ============ API 实例 ============
 
 // 使用工厂创建基础 CRUD API
-const baseApi = createApiWithStats<Product, ProductStats, Partial<Product>, Partial<Product>, ProductFilterParams>(
-  API_ENDPOINTS.PRODUCTS.LIST
-);
+const baseApi = createApiWithStats<
+  Product,
+  ProductStats,
+  Partial<Product>,
+  Partial<Product>,
+  ProductFilterParams
+>(API_ENDPOINTS.PRODUCTS.LIST, 'products');
 
 // 扩展自定义方法
 export const productApi = {

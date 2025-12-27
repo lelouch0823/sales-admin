@@ -22,6 +22,9 @@ export interface RecommendationFilterParams extends BaseFilterParams {
 // ============ API 实例 ============
 
 // 使用工厂创建 CRUD API
-export const recsApi = createCrudApi<Recommendation, Partial<Recommendation>, Partial<Recommendation>, RecommendationFilterParams>(
-  API_ENDPOINTS.RECOMMENDATIONS.LIST
-);
+export const recsApi = createCrudApi<
+  Recommendation,
+  Partial<Recommendation>,
+  Partial<Recommendation>,
+  RecommendationFilterParams
+>(API_ENDPOINTS.RECOMMENDATIONS.LIST, 'recommendations');

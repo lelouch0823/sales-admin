@@ -27,13 +27,20 @@ export interface InventoryBalance {
 }
 
 /** 库存变动类型 */
-export type MovementType = 'RECEIVE' | 'ISSUE' | 'TRANSFER_OUT' | 'TRANSFER_IN' | 'ADJUST' | 'RESERVE';
+export type MovementType =
+  | 'RECEIVE'
+  | 'ISSUE'
+  | 'TRANSFER_OUT'
+  | 'TRANSFER_IN'
+  | 'ADJUST'
+  | 'RESERVE';
 
 /** 库存变动记录 */
 export interface InventoryMovement {
   id: string;
   sku: string;
   warehouseId: string;
+  inventoryId?: string;
   type: MovementType;
   quantity: number;
   referenceNo?: string;
@@ -52,7 +59,13 @@ export interface StoreProductState {
 // ============ 单据类型 ============
 
 /** 单据状态 */
-export type DocumentStatus = 'DRAFT' | 'PENDING' | 'APPROVED' | 'SHIPPED' | 'RECEIVED' | 'CANCELLED';
+export type DocumentStatus =
+  | 'DRAFT'
+  | 'PENDING'
+  | 'APPROVED'
+  | 'SHIPPED'
+  | 'RECEIVED'
+  | 'CANCELLED';
 
 /** 单据类型 */
 export type DocumentType = 'RECEIVING' | 'ISSUING' | 'TRANSFER';

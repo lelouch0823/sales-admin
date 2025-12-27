@@ -2,6 +2,7 @@ import React, { memo } from 'react';
 import { Customer } from '../types';
 import { Badge } from '../../../components/common/Badge';
 import { Tooltip } from '../../../components/primitives';
+import { Button } from '../../../components/ui';
 import { CheckSquare, Square, Calendar } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { dateUtils } from '../../../utils';
@@ -42,12 +43,14 @@ export const CustomerRow: React.FC<CustomerRowProps> = memo(
         onClick={() => onSelectCustomer(customer)}
       >
         <td className="py-4 px-6" onClick={e => e.stopPropagation()}>
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => onToggleSelection(customer.id)}
-            className={`text-gray-400 hover:text-gray-600 ${isSelected ? 'text-brand' : ''}`}
+            className={`p-0 h-auto hover:bg-transparent text-gray-400 hover:text-gray-600 ${isSelected ? 'text-brand' : ''}`}
           >
             {isSelected ? <CheckSquare size={16} /> : <Square size={16} />}
-          </button>
+          </Button>
         </td>
         <td className="py-4 px-6">
           <div className="font-medium text-primary">{customer.name}</div>
@@ -93,26 +96,30 @@ export const CustomerRow: React.FC<CustomerRowProps> = memo(
           <div className="flex items-center justify-end gap-2">
             {!customer.ownerUserId && (
               <Tooltip content={t('crm.actions.claim')}>
-                <button
+                <Button
+                  variant="primary"
+                  size="sm"
                   onClick={() => {
                     onClaim(customer.id, currentUser.id);
                     toast.success(t('alerts.crm.claim_success'));
                   }}
-                  className="text-xs bg-brand text-white px-3 py-1.5 rounded hover:bg-brand-hover transition-colors font-medium shadow-sm"
+                  className="bg-brand hover:bg-brand-hover border-none"
                 >
                   {t('crm.actions.claim')}
-                </button>
+                </Button>
               </Tooltip>
             )}
 
             {customer.ownerUserId === currentUser.id && (
               <Tooltip content={t('crm.actions.return_pool')}>
-                <button
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => onRelease(customer.id)}
-                  className="text-xs text-danger-text hover:bg-danger-light px-3 py-1.5 rounded border border-transparent hover:border-danger-border transition-colors"
+                  className="text-red-600 hover:bg-red-50 hover:text-red-700"
                 >
                   {t('crm.actions.return_pool')}
-                </button>
+                </Button>
               </Tooltip>
             )}
           </div>

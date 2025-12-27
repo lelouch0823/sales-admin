@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import { Skeleton } from '@/components/common/Skeleton';
@@ -55,6 +55,84 @@ export interface DataTableProps<T> {
   className?: string;
 }
 
+interface DataTableRowProps<T> {
+  row: T;
+  rowIndex: number;
+  columns: Column<T>[];
+  isSelected: boolean;
+  onSelectRow?: (row: T) => void;
+  onRowClick?: (row: T) => void;
+  showCheckbox: boolean;
+}
+
+// 提取并 Memoize 行组件以优化性能
+const DataTableRow = memo(
+  <T,>({
+    row,
+    rowIndex,
+    columns,
+    isSelected,
+    onSelectRow,
+    onRowClick,
+    showCheckbox,
+  }: DataTableRowProps<T>) => {
+    const getCellValue = (row: T, column: Column<T>): unknown => {
+      if (column.accessor) {
+        if (typeof column.accessor === 'function') {
+          return column.accessor(row);
+        }
+        return row[column.accessor];
+      }
+      return (row as Record<string, unknown>)[column.key];
+    };
+
+    return (
+      <tr
+        className={cn(
+          'transition-colors',
+          isSelected ? 'bg-blue-50' : 'hover:bg-gray-50',
+          onRowClick && 'cursor-pointer'
+        )}
+        onClick={() => onRowClick?.(row)}
+      >
+        {showCheckbox && (
+          <td className="px-4 py-3" onClick={e => e.stopPropagation()}>
+            <input
+              type="checkbox"
+              checked={isSelected}
+              onChange={() => onSelectRow?.(row)}
+              className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            />
+          </td>
+        )}
+        {columns.map(column => {
+          const value = getCellValue(row, column);
+          return (
+            <td
+              key={column.key}
+              className={cn(
+                'px-4 py-3 text-sm text-gray-900',
+                column.align === 'center' && 'text-center',
+                column.align === 'right' && 'text-right'
+              )}
+            >
+              {column.render ? column.render(value, row, rowIndex) : (value as React.ReactNode)}
+            </td>
+          );
+        })}
+      </tr>
+    );
+  },
+  // 自定义比较函数（可选，如果默认浅比较不够用）
+  (prevProps, nextProps) => {
+    return (
+      prevProps.isSelected === nextProps.isSelected &&
+      prevProps.row === nextProps.row &&
+      prevProps.columns === nextProps.columns
+    );
+  }
+) as <T>(props: DataTableRowProps<T>) => React.ReactElement;
+
 /**
  * 通用数据表格组件
  */
@@ -78,16 +156,6 @@ export function DataTable<T>({
       return rowKey(row);
     }
     return String(row[rowKey]);
-  };
-
-  const getCellValue = (row: T, column: Column<T>): unknown => {
-    if (column.accessor) {
-      if (typeof column.accessor === 'function') {
-        return column.accessor(row);
-      }
-      return row[column.accessor];
-    }
-    return (row as Record<string, unknown>)[column.key];
   };
 
   const handleSort = (column: Column<T>) => {
@@ -219,43 +287,16 @@ export function DataTable<T>({
                 const key = getRowKey(row);
                 const isSelected = selectedRows?.has(key);
                 return (
-                  <tr
+                  <DataTableRow
                     key={key}
-                    className={cn(
-                      'transition-colors',
-                      isSelected ? 'bg-blue-50' : 'hover:bg-gray-50',
-                      onRowClick && 'cursor-pointer'
-                    )}
-                    onClick={() => onRowClick?.(row)}
-                  >
-                    {selectedRows !== undefined && (
-                      <td className="px-4 py-3" onClick={e => e.stopPropagation()}>
-                        <input
-                          type="checkbox"
-                          checked={isSelected}
-                          onChange={() => handleSelectRow(row)}
-                          className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                        />
-                      </td>
-                    )}
-                    {columns.map(column => {
-                      const value = getCellValue(row, column);
-                      return (
-                        <td
-                          key={column.key}
-                          className={cn(
-                            'px-4 py-3 text-sm text-gray-900',
-                            column.align === 'center' && 'text-center',
-                            column.align === 'right' && 'text-right'
-                          )}
-                        >
-                          {column.render
-                            ? column.render(value, row, rowIndex)
-                            : (value as React.ReactNode)}
-                        </td>
-                      );
-                    })}
-                  </tr>
+                    row={row}
+                    rowIndex={rowIndex}
+                    columns={columns}
+                    isSelected={!!isSelected}
+                    onSelectRow={handleSelectRow}
+                    onRowClick={onRowClick}
+                    showCheckbox={selectedRows !== undefined}
+                  />
                 );
               })
             )}
