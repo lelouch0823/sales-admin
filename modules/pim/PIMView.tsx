@@ -9,6 +9,7 @@ import { CollectionList } from './components/collections/CollectionList';
 import { CollectionForm } from './components/collections/CollectionForm';
 import { DesignerList } from './components/designers/DesignerList';
 import { DesignerForm } from './components/designers/DesignerForm';
+import { ErrorBoundary } from '../../components/common/ErrorBoundary';
 
 import { Product } from './types';
 import { Brand } from '../brands/types';
@@ -165,7 +166,7 @@ export function PIMView() {
       <div className="flex-1 min-h-0 relative">
         <AnimatedPresenceWrapper mode="wait">
           <AnimatedBox key={activeTab} className="h-full" animation="fadeIn" duration={0.2}>
-            {renderContent()}
+            <ErrorBoundary>{renderContent()}</ErrorBoundary>
           </AnimatedBox>
         </AnimatedPresenceWrapper>
       </div>

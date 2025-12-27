@@ -19,7 +19,10 @@ export interface BrandFilterParams extends BaseFilterParams {
 // ============ API 实例 ============
 
 // 使用工厂创建基础 CRUD API
-const baseApi = createCrudApi<Brand, Partial<Brand>, Partial<Brand>, BrandFilterParams>('/brands');
+const baseApi = createCrudApi<Brand, Partial<Brand>, Partial<Brand>, BrandFilterParams>(
+  '/brands',
+  'brands'
+);
 
 // 扩展品牌特有方法
 export const brandApi = {

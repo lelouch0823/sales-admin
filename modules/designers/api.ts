@@ -24,7 +24,7 @@ const baseApi = createApiWithStats<
   Partial<Designer>,
   Partial<Designer>,
   DesignerFilterParams
->('/designers');
+>('/designers', 'designers');
 
 // 扩展设计师特有方法
 export const designerApi = {

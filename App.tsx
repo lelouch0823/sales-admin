@@ -3,9 +3,12 @@ import { Loader2 } from 'lucide-react';
 import { AppProvider } from './lib/context';
 import { ToastProvider } from './lib/toast';
 import { AuthProvider, useAuth } from './lib/auth';
+import { QueryProvider } from './lib/query';
+import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
 import { CommandPalette } from './components/command-palette';
+import { Toaster } from 'react-hot-toast';
 
 // 视图组件 - 从各自的业务模块导入
 import { PIMView } from './modules/pim/PIMView';
@@ -223,11 +226,16 @@ const MainLayout: React.FC = () => {
  */
 const App: React.FC = () => {
   return (
-    <ToastProvider>
-      <AuthProvider>
-        <MainLayout />
-      </AuthProvider>
-    </ToastProvider>
+    <ErrorBoundary>
+      <QueryProvider>
+        <ToastProvider>
+          <AuthProvider>
+            <MainLayout />
+            <Toaster position="top-right" />
+          </AuthProvider>
+        </ToastProvider>
+      </QueryProvider>
+    </ErrorBoundary>
   );
 };
 

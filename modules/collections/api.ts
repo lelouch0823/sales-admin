@@ -38,7 +38,7 @@ const baseApi = createApiWithStats<
   Partial<Collection>,
   Partial<Collection>,
   CollectionFilterParams
->('/collections');
+>('/collections', 'collections');
 
 // 扩展系列特有方法
 export const collectionApi = {

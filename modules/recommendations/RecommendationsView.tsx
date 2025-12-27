@@ -32,14 +32,16 @@ export const RecommendationsView: React.FC<RecsViewProps> = ({ mode }) => {
     storeStock,
     addRecommendation,
     updateRecommendation,
-    deleteRecommendation
+    deleteRecommendation,
   } = useApp();
   const { t } = useTranslation();
   const toast = useToast();
 
   // 当前选中的租户 (仅在 STORE/PREVIEW 模式下有效)
   const [selectedTenantId, setSelectedTenantId] = useState<string>(
-    mode === 'STORE' || mode === 'PREVIEW' ? (currentUser.tenantId || tenants[1].id) : ''
+    mode === 'STORE' || mode === 'PREVIEW'
+      ? currentUser.tenantId || (tenants.length > 1 ? tenants[1].id : tenants[0]?.id || '')
+      : ''
   );
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -108,7 +110,7 @@ export const RecommendationsView: React.FC<RecsViewProps> = ({ mode }) => {
       endAt: '2099-12-31', // 默认永久
       priority: newPriority,
       isEnabled: true,
-      reason: ''
+      reason: '',
     });
     toast.success(t('alerts.recs.add_success'));
     setIsAddModalOpen(false);

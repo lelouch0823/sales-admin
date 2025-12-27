@@ -2,6 +2,9 @@ import { Tenant, User, Recommendation, AuditLog, Warehouse } from '../types';
 import { Product } from '../modules/pim/types';
 import { Customer } from '../modules/crm/types';
 import { InventoryBalance, InventoryMovement } from '../modules/inventory/types';
+import { Brand } from '../modules/brands/types';
+import { Collection } from '../modules/collections/types';
+import { Designer } from '../modules/designers/types';
 
 import { MOCK_TENANTS, MOCK_WAREHOUSES } from './data/system';
 import { MOCK_USERS } from './data/users';
@@ -9,10 +12,16 @@ import { MOCK_PRODUCTS } from '../modules/pim/data';
 import { MOCK_INVENTORY, MOCK_MOVEMENTS } from '../modules/inventory/data';
 import { MOCK_CUSTOMERS } from '../modules/crm/data';
 import { MOCK_RECS } from '../modules/recommendations/data';
+import { MOCK_BRANDS } from '../modules/brands/data';
+import { MOCK_COLLECTIONS } from '../modules/collections/data';
+import { MOCK_DESIGNERS } from '../modules/designers/data';
 import { MOCK_LOGS } from './data/logs';
 
 export class ApiError extends Error {
-  constructor(public message: string, public status: number) {
+  constructor(
+    public message: string,
+    public status: number
+  ) {
     super(message);
     this.name = 'ApiError';
   }
@@ -34,6 +43,9 @@ interface DbSchema {
   logs: AuditLog[];
   tenants: Tenant[];
   warehouses: Warehouse[];
+  brands: Brand[];
+  collections: Collection[];
+  designers: Designer[];
 }
 
 /**
@@ -57,7 +69,9 @@ class MockDatabase {
           this.data = parsed;
           return;
         }
-      } catch (e) { console.error('DB Load error', e); }
+      } catch (e) {
+        console.error('DB Load error', e);
+      }
     }
     // 初始化种子数据 (Seed Data)
     this.data = {
@@ -70,7 +84,10 @@ class MockDatabase {
       customers: [...MOCK_CUSTOMERS],
       logs: [...MOCK_LOGS],
       tenants: [...MOCK_TENANTS],
-      warehouses: [...MOCK_WAREHOUSES]
+      warehouses: [...MOCK_WAREHOUSES],
+      brands: [...MOCK_BRANDS],
+      collections: [...MOCK_COLLECTIONS],
+      designers: [...MOCK_DESIGNERS],
     };
     this.persist();
   }
@@ -96,4 +113,5 @@ class MockDatabase {
 export const db = new MockDatabase();
 
 // 辅助方法: 模拟网络延迟 (300-600ms) 以测试 Loading 状态
-export const delay = (ms?: number) => new Promise(resolve => setTimeout(resolve, ms || 300 + Math.random() * 300));
+export const delay = (ms?: number) =>
+  new Promise(resolve => setTimeout(resolve, ms || 300 + Math.random() * 300));

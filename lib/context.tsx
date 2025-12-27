@@ -15,6 +15,7 @@ import { Customer } from '../modules/crm/types';
 import { InventoryBalance, InventoryMovement, StoreProductState } from '../modules/inventory/types';
 
 import { useAuth } from './auth';
+import { useToast } from './toast';
 import { productApi, inventoryApi, crmApi, recsApi, userApi, systemApi } from './api';
 import { MOCK_USERS } from './data/users';
 
@@ -100,6 +101,7 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
  */
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { user: authUser, switchUser: authSwitchUser } = useAuth();
+  const toast = useToast();
   // 如果 Auth 尚未加载完成，使用 Mock 用户兜底 (防止崩溃)
   const currentUser = authUser || MOCK_USERS[0];
 
@@ -138,6 +140,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         return defaultVal;
       };
 
+      // 检查是否有失败的请求
+      const hasError = results.some(r => r.status === 'rejected');
+      if (hasError) {
+        toast.warning('部分数据同步失败，系统已自动切换至离线/缓存模式，请检查网络连接。');
+      }
+
       setTenants(getResult(results[0], []));
       setWarehouses(getResult(results[1], []));
       setUsers(getResult(results[2], []));
@@ -149,6 +157,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       setLogs(getResult(results[8], []));
     } catch (e) {
       console.error('Critical error in data fetching', e);
+      toast.error('系统数据初始化严重失败，请尝试刷新页面。');
     } finally {
       setIsLoadingData(false);
     }
