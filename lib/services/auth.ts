@@ -36,9 +36,10 @@ export interface ChangePasswordRequest {
 // ============ 本地状态（用于开发环境 mock） ============
 
 import { MOCK_USERS } from '../data/users';
+import { USE_MOCK_API } from '../api-factory';
 
-// 开发模式标志（当后端不可用时使用 mock 数据）
-const USE_MOCK = true;
+// 使用全局 Mock 开关（由 VITE_USE_MOCK 环境变量控制）
+const USE_MOCK = USE_MOCK_API;
 
 // Mock 用户数据（使用前端类型）
 const MOCK_USER: User = {

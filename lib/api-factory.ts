@@ -9,6 +9,8 @@
  */
 
 import { http, HttpError } from './http';
+import { ApiError, db } from './db';
+import { env } from '../config/env';
 
 // ============ 类型定义 ============
 
@@ -66,10 +68,11 @@ export interface CrudApi<
  * @param basePath - API 基础路径，如 '/products'
  * @returns CRUD API 对象
  */
-import { db } from './db';
-
-// 临时全局开关，实际应放入环境变量
-export const USE_MOCK_API = true;
+/**
+ * 标记：是否使用 Mock 数据
+ * 由环境变量 VITE_USE_MOCK 控制
+ */
+export const USE_MOCK_API = env.useMock;
 
 /**
  * 创建通用 CRUD API
@@ -137,7 +140,7 @@ export function createCrudApi<
       if (USE_MOCK_API && mockKey) {
         await new Promise(r => setTimeout(r, 200));
         const item = (db.get(mockKey) as unknown as T[]).find(i => i.id === id);
-        if (!item) throw new Error('Not found');
+        if (!item) throw new ApiError('数据未找到，请刷新页面后重试', 404);
         return item;
       }
       return http.get<T>(`${basePath}/${id}`);
@@ -160,7 +163,7 @@ export function createCrudApi<
         await new Promise(r => setTimeout(r, 400));
         const list = db.get(mockKey) as unknown as T[];
         const index = list.findIndex(i => i.id === id);
-        if (index === -1) throw new Error('Not found');
+        if (index === -1) throw new ApiError('要更新的数据未找到，可能已被删除', 404);
 
         const updated = { ...list[index], ...data };
         list[index] = updated;

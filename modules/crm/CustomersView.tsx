@@ -12,6 +12,7 @@ import { useTranslation } from 'react-i18next';
 import { AnimatedBox } from '../../components/motion';
 import { Tooltip, TooltipProvider } from '../../components/primitives';
 import { Button, Input } from '../../components/ui';
+import { ErrorBoundary } from '../../components/common/ErrorBoundary';
 
 /**
  * 客户管理视图 (CustomersView)
@@ -122,161 +123,163 @@ export const CustomersView: React.FC = () => {
 
   return (
     <TooltipProvider>
-      <div className="space-y-6">
-        {/* 顶部过滤器和搜索栏 */}
-        <div className="flex flex-col md:flex-row gap-4 justify-between items-start md:items-center">
-          {/* Tab 切换器 */}
-          <div className="flex p-1 bg-gray-100 rounded-lg">
-            {['ALL', 'MY', 'POOL', 'SHARED'].map(t => (
-              <button
-                key={t}
-                onClick={() => {
-                  setTab(t as 'MY' | 'POOL' | 'SHARED' | 'ALL');
-                  setSelectedIds(new Set());
-                }}
-                className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all ${
-                  tab === t
-                    ? 'bg-white text-primary shadow-sm'
-                    : 'text-gray-500 hover:text-gray-700'
-                }`}
-              >
-                {getTabLabel(t)}
-              </button>
-            ))}
+      <ErrorBoundary>
+        <div className="space-y-6">
+          {/* 顶部过滤器和搜索栏 */}
+          <div className="flex flex-col md:flex-row gap-4 justify-between items-start md:items-center">
+            {/* Tab 切换器 */}
+            <div className="flex p-1 bg-gray-100 rounded-lg">
+              {['ALL', 'MY', 'POOL', 'SHARED'].map(t => (
+                <button
+                  key={t}
+                  onClick={() => {
+                    setTab(t as 'MY' | 'POOL' | 'SHARED' | 'ALL');
+                    setSelectedIds(new Set());
+                  }}
+                  className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all ${
+                    tab === t
+                      ? 'bg-white text-primary shadow-sm'
+                      : 'text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  {getTabLabel(t)}
+                </button>
+              ))}
+            </div>
+
+            <div className="flex items-center gap-3 w-full md:w-auto">
+              <div className="relative flex-1 md:w-64">
+                <Search size={16} className="absolute left-3 top-2.5 text-gray-400 z-10" />
+                <Input
+                  placeholder={t('crm.search_placeholder')}
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  className="pl-9"
+                  fullWidth
+                />
+              </div>
+              <Tooltip content={t('common.filters')}>
+                <Button variant="secondary" className="p-2 h-auto">
+                  <Filter size={18} />
+                </Button>
+              </Tooltip>
+            </div>
           </div>
 
-          <div className="flex items-center gap-3 w-full md:w-auto">
-            <div className="relative flex-1 md:w-64">
-              <Search size={16} className="absolute left-3 top-2.5 text-gray-400 z-10" />
-              <Input
-                placeholder={t('crm.search_placeholder')}
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                className="pl-9"
-                fullWidth
-              />
-            </div>
-            <Tooltip content={t('common.filters')}>
-              <Button variant="secondary" className="p-2 h-auto">
-                <Filter size={18} />
-              </Button>
-            </Tooltip>
-          </div>
-        </div>
-
-        {/* 批量操作栏 */}
-        {selectedIds.size > 0 && (
-          <AnimatedBox
-            animation="fadeInUp"
-            className="bg-primary text-white px-4 py-3 rounded-lg flex items-center justify-between shadow-lg"
-          >
-            <div className="text-sm font-medium pl-2">
-              {selectedIds.size} {t('common.selected')}
-            </div>
-            <div className="flex items-center gap-3">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setSelectedIds(new Set())}
-                className="text-gray-200 hover:text-white hover:bg-white/10"
-              >
-                {t('common.cancel')}
-              </Button>
-              {tab === 'POOL' && (
+          {/* 批量操作栏 */}
+          {selectedIds.size > 0 && (
+            <AnimatedBox
+              animation="fadeInUp"
+              className="bg-primary text-white px-4 py-3 rounded-lg flex items-center justify-between shadow-lg"
+            >
+              <div className="text-sm font-medium pl-2">
+                {selectedIds.size} {t('common.selected')}
+              </div>
+              <div className="flex items-center gap-3">
                 <Button
-                  variant="secondary"
+                  variant="ghost"
                   size="sm"
-                  onClick={handleBatchClaim}
-                  className="font-bold text-primary"
+                  onClick={() => setSelectedIds(new Set())}
+                  className="text-gray-200 hover:text-white hover:bg-white/10"
                 >
-                  {t('crm.batch.claim')}
+                  {t('common.cancel')}
                 </Button>
-              )}
-              {(currentUser.role === 'SUPER_ADMIN' || currentUser.role === 'STORE_MANAGER') && (
-                <Button
-                  variant="primary"
-                  size="sm"
-                  onClick={() => setIsAssignModalOpen(true)}
-                  className="bg-brand hover:bg-brand-hover text-white border-none"
-                >
-                  <UserCheck size={16} className="mr-1" /> {t('crm.batch.assign')}
-                </Button>
-              )}
-            </div>
-          </AnimatedBox>
-        )}
+                {tab === 'POOL' && (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={handleBatchClaim}
+                    className="font-bold text-primary"
+                  >
+                    {t('crm.batch.claim')}
+                  </Button>
+                )}
+                {(currentUser.role === 'SUPER_ADMIN' || currentUser.role === 'STORE_MANAGER') && (
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={() => setIsAssignModalOpen(true)}
+                    className="bg-brand hover:bg-brand-hover text-white border-none"
+                  >
+                    <UserCheck size={16} className="mr-1" /> {t('crm.batch.assign')}
+                  </Button>
+                )}
+              </div>
+            </AnimatedBox>
+          )}
 
-        <AnimatedBox animation="fadeInUp">
-          <Card noPadding>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-gray-50/50 border-b border-gray-100 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                    <th className="py-4 px-6 w-12">
-                      <button onClick={toggleAll} className="text-gray-400 hover:text-gray-600">
-                        {selectedIds.size > 0 && selectedIds.size === filteredCustomers.length ? (
-                          <CheckSquare size={16} />
-                        ) : (
-                          <Square size={16} />
-                        )}
-                      </button>
-                    </th>
-                    <th className="py-4 px-6">{t('crm.table.name_phone')}</th>
-                    <th className="py-4 px-6">{t('crm.table.tags')}</th>
-                    <th className="py-4 px-6">{t('crm.table.status')}</th>
-                    <th className="py-4 px-6">{t('crm.table.next_followup')}</th>
-                    <th className="py-4 px-6 text-right">{t('common.actions')}</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {filteredCustomers.map(customer => (
-                    <CustomerRow
-                      key={customer.id}
-                      customer={customer}
-                      currentUser={currentUser}
-                      isSelected={selectedIds.has(customer.id)}
-                      onToggleSelection={toggleSelection}
-                      onSelectCustomer={setSelectedCustomer}
-                      onClaim={claimCustomer}
-                      onRelease={releaseCustomer}
-                    />
-                  ))}
-                  {filteredCustomers.length === 0 && (
-                    <tr>
-                      <td colSpan={6}>
-                        <EmptyState
-                          onAction={() => setSearch('')}
-                          actionLabel={t('common.clear_filters')}
-                        />
-                      </td>
+          <AnimatedBox animation="fadeInUp">
+            <Card noPadding>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-gray-50/50 border-b border-gray-100 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                      <th className="py-4 px-6 w-12">
+                        <button onClick={toggleAll} className="text-gray-400 hover:text-gray-600">
+                          {selectedIds.size > 0 && selectedIds.size === filteredCustomers.length ? (
+                            <CheckSquare size={16} />
+                          ) : (
+                            <Square size={16} />
+                          )}
+                        </button>
+                      </th>
+                      <th className="py-4 px-6">{t('crm.table.name_phone')}</th>
+                      <th className="py-4 px-6">{t('crm.table.tags')}</th>
+                      <th className="py-4 px-6">{t('crm.table.status')}</th>
+                      <th className="py-4 px-6">{t('crm.table.next_followup')}</th>
+                      <th className="py-4 px-6 text-right">{t('common.actions')}</th>
                     </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </Card>
-        </AnimatedBox>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {filteredCustomers.map(customer => (
+                      <CustomerRow
+                        key={customer.id}
+                        customer={customer}
+                        currentUser={currentUser}
+                        isSelected={selectedIds.has(customer.id)}
+                        onToggleSelection={toggleSelection}
+                        onSelectCustomer={setSelectedCustomer}
+                        onClaim={claimCustomer}
+                        onRelease={releaseCustomer}
+                      />
+                    ))}
+                    {filteredCustomers.length === 0 && (
+                      <tr>
+                        <td colSpan={6}>
+                          <EmptyState
+                            onAction={() => setSearch('')}
+                            actionLabel={t('common.clear_filters')}
+                          />
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </Card>
+          </AnimatedBox>
 
-        <BatchAssignModal
-          isOpen={isAssignModalOpen}
-          onClose={() => setIsAssignModalOpen(false)}
-          count={selectedIds.size}
-          users={users}
-          onAssign={handleBatchAssign}
-        />
+          <BatchAssignModal
+            isOpen={isAssignModalOpen}
+            onClose={() => setIsAssignModalOpen(false)}
+            count={selectedIds.size}
+            users={users}
+            onAssign={handleBatchAssign}
+          />
 
-        <CustomerDetailPanel
-          customer={selectedCustomer}
-          currentUser={currentUser}
-          onClose={() => setSelectedCustomer(null)}
-          canEdit={!!canEdit}
-          canShare={!!canShare}
-          users={users}
-          onUpdate={updateCustomer}
-          onAddShared={addSharedMember}
-          onRemoveShared={removeSharedMember}
-        />
-      </div>
+          <CustomerDetailPanel
+            customer={selectedCustomer}
+            currentUser={currentUser}
+            onClose={() => setSelectedCustomer(null)}
+            canEdit={!!canEdit}
+            canShare={!!canShare}
+            users={users}
+            onUpdate={updateCustomer}
+            onAddShared={addSharedMember}
+            onRemoveShared={removeSharedMember}
+          />
+        </div>
+      </ErrorBoundary>
     </TooltipProvider>
   );
 };
